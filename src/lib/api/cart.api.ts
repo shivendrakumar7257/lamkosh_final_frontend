@@ -1,4 +1,5 @@
 import { api, ApiResponse } from "@/lib/api";
+import { getGuestId, getOrCreateGuestId, setGuestId } from "@/lib/guest";
 import {
   CartObject,
   CartResponseData,
@@ -19,10 +20,10 @@ export const CartApi = {
   /**
    * POST /api/v1/cart/items
    * Add Item to Cart
-   * Body: { productId: string, variantId?: string, quantity: number }
-   * Auth: Optional (Bearer token OR X-Guest-ID automatically attached by interceptor)
+   * Body: { productId: string, variantId?: string, quantity: number, guestId?: string }
    */
   addItem: async (payload: AddToCartPayload): Promise<CartResponseData> => {
+    const guestId = getGuestId() || getOrCreateGuestId();
     // Only send variantId if defined
     const body: Record<string, any> = {
       productId: sanitizeId(payload.productId),
@@ -31,17 +32,24 @@ export const CartApi = {
     if (payload.variantId) {
       body.variantId = sanitizeId(payload.variantId);
     }
+    if (guestId) {
+      body.guestId = guestId;
+    }
 
     const res = await api.post<ApiResponse<any>>("/cart/items", body);
     const data = res.data?.data || res.data;
+    const serverGuestId = data?.guestId || (res.headers && res.headers["x-guest-id"]);
+    if (serverGuestId) {
+      setGuestId(serverGuestId);
+    }
 
     if (data?.cart) {
-      return { cart: data.cart, guestId: data.guestId };
+      return { cart: data.cart, guestId: serverGuestId || data.guestId };
     }
     // Fallback if data is the cart object itself
     return {
       cart: (data?.items ? data : { items: [], totalItems: 0, subtotal: 0 }) as CartObject,
-      guestId: data?.guestId,
+      guestId: serverGuestId || data?.guestId,
     };
   },
 
@@ -50,15 +58,22 @@ export const CartApi = {
    * Retrieve current user or guest cart
    */
   getCart: async (): Promise<CartResponseData> => {
-    const res = await api.get<ApiResponse<any>>("/cart");
+    const guestId = getGuestId();
+    const res = await api.get<ApiResponse<any>>("/cart", {
+      params: guestId ? { guestId } : undefined,
+    });
     const data = res.data?.data || res.data;
+    const serverGuestId = data?.guestId || (res.headers && res.headers["x-guest-id"]);
+    if (serverGuestId && !guestId) {
+      setGuestId(serverGuestId);
+    }
 
     if (data?.cart) {
-      return { cart: data.cart, guestId: data.guestId };
+      return { cart: data.cart, guestId: serverGuestId || data.guestId };
     }
     return {
       cart: (data?.items ? data : { items: [], totalItems: 0, subtotal: 0 }) as CartObject,
-      guestId: data?.guestId,
+      guestId: serverGuestId || data?.guestId,
     };
   },
 
@@ -67,7 +82,11 @@ export const CartApi = {
    * Update quantity of a cart item
    */
   updateQuantity: async (itemId: string, quantity: number): Promise<CartObject> => {
-    const res = await api.put<ApiResponse<any>>(`/cart/items/${itemId}`, { quantity });
+    const guestId = getGuestId();
+    const res = await api.put<ApiResponse<any>>(`/cart/items/${itemId}`, {
+      quantity,
+      ...(guestId ? { guestId } : {}),
+    });
     const data = res.data?.data || res.data;
     if (data?.cart) {
       return data.cart as CartObject;
@@ -80,7 +99,10 @@ export const CartApi = {
    * Remove item from cart
    */
   removeItem: async (itemId: string): Promise<{ message: string; cart?: CartObject }> => {
-    const res = await api.delete<ApiResponse<any>>(`/cart/items/${itemId}`);
+    const guestId = getGuestId();
+    const res = await api.delete<ApiResponse<any>>(`/cart/items/${itemId}`, {
+      data: guestId ? { guestId } : undefined,
+    });
     const data = res.data?.data || res.data;
     return {
       message: res.data?.message || "Cart item removed successfully",
@@ -93,7 +115,10 @@ export const CartApi = {
    * Clear the entire cart
    */
   clearCart: async (): Promise<void> => {
-    await api.delete<ApiResponse<any>>("/cart");
+    const guestId = getGuestId();
+    await api.delete<ApiResponse<any>>("/cart", {
+      data: guestId ? { guestId } : undefined,
+    });
   },
 
   /**
@@ -102,9 +127,13 @@ export const CartApi = {
    */
   checkItem: async (productId: string, variantId?: string): Promise<CartCheckResponse> => {
     const cleanPid = sanitizeId(productId);
+    const guestId = getGuestId();
     const params: Record<string, string> = { productId: cleanPid };
     if (variantId) {
       params.variantId = sanitizeId(variantId);
+    }
+    if (guestId) {
+      params.guestId = guestId;
     }
     const res = await api.get<ApiResponse<any>>("/cart/check", { params });
     const data = res.data?.data || res.data;

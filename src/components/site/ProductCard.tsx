@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Eye, Heart, ShoppingBag, Loader2, Image as ImageIcon } from "lucide-react";
-import { toast } from "sonner";
 import { formatPrice, type Product } from "@/data/catalog";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { ProductApi } from "@/lib/api/product.api";
+import { VariantSelectModal } from "@/components/site/VariantSelectModal";
+import { getCategoryNonModelImage } from "@/components/site/CategoryCard";
 import { getMediaUrl } from "@/lib/media";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +24,10 @@ export function ProductCard({
   const [imageError, setImageError] = useState(false);
   const [hoverError, setHoverError] = useState(false);
 
+  const [showVariantModal, setShowVariantModal] = useState(false);
+  const [modalProduct, setModalProduct] = useState<any>(product);
+  const [modalLoading, setModalLoading] = useState(false);
+
   const rawId = product.id || product.handle;
   const productId =
     typeof rawId === "string"
@@ -32,26 +38,47 @@ export function ProductCard({
 
   const inStock = product.inStock !== false && (product.stock === undefined || product.stock > 0);
 
-  const hasVariants = Boolean(
-    (product.variants && product.variants.length > 0) ||
-    (product.sizes && product.sizes.length > 1),
-  );
-
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!inStock) return;
 
-    if (hasVariants) {
-      toast.warning("Please select a size/variant before adding to cart");
-      navigate({
-        to: "/products/$handle",
-        params: { handle: product.handle || product.id },
-      });
+    // Check if product already has variants
+    if (product.variants && product.variants.length > 0) {
+      setModalProduct(product);
+      setShowVariantModal(true);
       return;
     }
 
+    if (product.sizes && product.sizes.length > 0) {
+      setModalProduct(product);
+      setShowVariantModal(true);
+      return;
+    }
+
+    // If variants are not in product object, check if backend product has variants
+    const isUuid =
+      typeof productId === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId);
+
+    if (isUuid) {
+      try {
+        setAddingToCart(true);
+        const fullProd = await ProductApi.getPublicProductById(productId);
+        if (fullProd && fullProd.variants && fullProd.variants.length > 0) {
+          setModalProduct(fullProd);
+          setShowVariantModal(true);
+          return;
+        }
+      } catch (err) {
+        console.warn("Could not fetch product variants:", err);
+      } finally {
+        setAddingToCart(false);
+      }
+    }
+
+    // Product has no variants: add to cart directly without variantId
     try {
       setAddingToCart(true);
       await addToCart(productId, 1);
@@ -60,26 +87,65 @@ export function ProductCard({
     }
   };
 
+  const handleConfirmVariant = async (variantId?: string, quantity: number = 1) => {
+    try {
+      setModalLoading(true);
+      await addToCart(productId, quantity, variantId || undefined);
+      setShowVariantModal(false);
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   const handleToggleWishlist = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    await toggleWishlist(productId);
+    await toggleWishlist(productId, product);
   };
 
-  const rawFirst = product.media?.[0]?.url || product.images?.[0];
-  const rawHover = product.media?.[1]?.url || product.images?.[1];
+  // Extract all valid image candidates from all possible fields
+  const candidateUrls: string[] = [];
 
-  const firstPath = typeof rawFirst === "object" && rawFirst?.url ? rawFirst.url : rawFirst;
-  const hoverPath = typeof rawHover === "object" && rawHover?.url ? rawHover.url : rawHover;
+  // Check media array
+  if (Array.isArray(product.media)) {
+    product.media.forEach((m: any) => {
+      if (!m) return;
+      const u = typeof m === "string" ? m : m.url || m.imageUrl;
+      if (u && typeof u === "string" && !u.startsWith("blob:") && !u.toLowerCase().endsWith(".mp4")) {
+        candidateUrls.push(getMediaUrl(u));
+      }
+    });
+  }
 
-  const imageUrl =
-    firstPath && typeof firstPath === "string" && !firstPath.startsWith("blob:")
-      ? getMediaUrl(firstPath)
-      : null;
-  const hoverImageUrl =
-    hoverPath && typeof hoverPath === "string" && !hoverPath.startsWith("blob:")
-      ? getMediaUrl(hoverPath)
-      : null;
+  // Check images array
+  if (Array.isArray(product.images)) {
+    product.images.forEach((img: any) => {
+      if (!img) return;
+      const u = typeof img === "string" ? img : img.url || img.imageUrl;
+      if (u && typeof u === "string" && !u.startsWith("blob:") && !u.toLowerCase().endsWith(".mp4")) {
+        candidateUrls.push(getMediaUrl(u));
+      }
+    });
+  }
+
+  // Check single image fields
+  [product.image, product.imageUrl, product.featuredImage, product.thumbnail].forEach((single) => {
+    if (single && typeof single === "string" && !single.startsWith("blob:")) {
+      candidateUrls.push(getMediaUrl(single));
+    }
+  });
+
+  const validCandidates = candidateUrls.filter(Boolean);
+
+  const fallbackImage = getCategoryNonModelImage(
+    product.category?.name || product.category || product.type || product.color || product.title || product.name || "",
+    String(product.id || product.handle || ""),
+  );
+
+  const primaryImage = validCandidates[0] || fallbackImage;
+  const hoverImageUrl = validCandidates[1] || null;
+
+  const displayImage = imageError ? fallbackImage : primaryImage;
 
   const title = product.title || product.name;
   const sellPriceNum = Number(product.sellPrice ?? product.price ?? 0);
@@ -94,23 +160,16 @@ export function ProductCard({
           params={{ handle: product.handle || product.id }}
           className="block h-full w-full"
         >
-          {imageUrl && !imageError ? (
-            <img
-              src={imageUrl}
-              alt={title}
-              loading="lazy"
-              onError={() => setImageError(true)}
-              className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
-            />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center bg-[#FAF8F5] text-[#A8A29E]">
-              <ImageIcon className="h-8 w-8 stroke-[1.2] opacity-40 mb-1.5" />
-              <span className="text-[10px] uppercase tracking-widest font-sans font-medium text-[#78716C]">
-                No Image
-              </span>
-            </div>
-          )}
-          {hoverImageUrl && !hoverError ? (
+          <img
+            src={displayImage}
+            alt={title}
+            loading="lazy"
+            onError={() => {
+              if (!imageError) setImageError(true);
+            }}
+            className="h-full w-full object-cover object-top transition-transform duration-700 group-hover:scale-105"
+          />
+          {hoverImageUrl && !hoverError && !imageError ? (
             <img
               src={hoverImageUrl}
               alt=""
@@ -219,6 +278,15 @@ export function ProductCard({
           )}
         </div>
       </div>
+
+      <VariantSelectModal
+        key={modalProduct?.id || productId}
+        isOpen={showVariantModal}
+        onClose={() => setShowVariantModal(false)}
+        product={modalProduct}
+        onConfirm={handleConfirmVariant}
+        loading={modalLoading}
+      />
     </div>
   );
 }

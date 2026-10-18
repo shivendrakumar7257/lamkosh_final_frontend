@@ -9,14 +9,35 @@ export interface WishlistContextType {
   wishlist: WishlistObject;
   wishlistCount: number;
   loading: boolean;
-  addToWishlist: (productId: string) => Promise<boolean>;
+  addToWishlist: (productId: string, productSnapshot?: any) => Promise<boolean>;
   removeFromWishlist: (itemIdOrProductId: string) => Promise<boolean>;
-  toggleWishlist: (productId: string) => Promise<boolean>;
+  toggleWishlist: (productId: string, productSnapshot?: any) => Promise<boolean>;
   isItemWishlisted: (productId: string) => boolean;
   clearWishlist: () => Promise<boolean>;
   mergeAfterLogin: () => Promise<WishlistMergeResponse | null>;
   refreshWishlist: () => Promise<void>;
 }
+
+const GUEST_WISHLIST_KEY = "lamoksh_guest_wishlist";
+
+const getSavedGuestWishlist = (): WishlistItem[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(GUEST_WISHLIST_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {}
+  return [];
+};
+
+const saveGuestWishlist = (items: WishlistItem[]) => {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(GUEST_WISHLIST_KEY, JSON.stringify(items));
+  } catch {}
+};
 
 const initialWishlist: WishlistObject = {
   wishlistId: null,
@@ -28,7 +49,19 @@ const initialWishlist: WishlistObject = {
 const WishlistContext = createContext<WishlistContextType | null>(null);
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
-  const [wishlist, setWishlist] = useState<WishlistObject>(initialWishlist);
+  const [wishlist, setWishlist] = useState<WishlistObject>(() => {
+    const guestItems = getSavedGuestWishlist();
+    if (guestItems.length > 0) {
+      return {
+        wishlistId: null,
+        guestId: getGuestId(),
+        items: guestItems,
+        totalItems: guestItems.length,
+      };
+    }
+    return initialWishlist;
+  });
+
   const [loading, setLoading] = useState<boolean>(true);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
 
@@ -43,16 +76,60 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       const res = await WishlistApi.getWishlist();
-      if (res.guestId && !localStorage.getItem("guest_id")) {
-        setGuestId(res.guestId);
+      
+      if (isAuthenticated) {
+        setWishlist(res.wishlist || initialWishlist);
+      } else {
+        // Guest user: preserve and merge local items with server items
+        const localItems = getSavedGuestWishlist();
+        const serverItems = res.wishlist?.items || [];
+
+        const mergedMap = new Map<string, WishlistItem>();
+        localItems.forEach((it) => mergedMap.set(it.productId, it));
+        serverItems.forEach((it) => {
+          const existing = mergedMap.get(it.productId);
+          mergedMap.set(it.productId, {
+            ...existing,
+            ...it,
+            product:
+              it.product && it.product.name && it.product.name !== "Saved Piece"
+                ? it.product
+                : existing?.product || it.product,
+          });
+        });
+
+        const mergedList = Array.from(mergedMap.values());
+        saveGuestWishlist(mergedList);
+
+        const activeGuestId = res.guestId || res.wishlist?.guestId || getGuestId();
+        if (activeGuestId) {
+          setGuestId(activeGuestId);
+        }
+
+        setWishlist({
+          wishlistId: res.wishlist?.wishlistId || null,
+          guestId: activeGuestId,
+          items: mergedList,
+          totalItems: mergedList.length,
+        });
       }
-      setWishlist(res.wishlist || initialWishlist);
     } catch (err) {
       console.warn("Failed to load wishlist:", err);
+      if (!isAuthenticated) {
+        const localItems = getSavedGuestWishlist();
+        if (localItems.length > 0) {
+          setWishlist({
+            wishlistId: null,
+            guestId: getGuestId(),
+            items: localItems,
+            totalItems: localItems.length,
+          });
+        }
+      }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   // Fetch wishlist on mount, on auth change, and on custom wishlist:refresh event
   useEffect(() => {
@@ -94,7 +171,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   /**
    * Add Item to Wishlist with optimistic update
    */
-  const addToWishlist = useCallback(async (productId: string): Promise<boolean> => {
+  const addToWishlist = useCallback(async (productId: string, productSnapshot?: any): Promise<boolean> => {
     if (!productId) return false;
     const cleanId = productId
       .replace(/^blob:https?:\/\/[^\/]+\//i, "")
@@ -103,6 +180,26 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     // Optimistic addition
     const tempId = `temp-${Date.now()}`;
+    const optimisticItem: WishlistItem = {
+      id: tempId,
+      productId: cleanId,
+      createdAt: new Date().toISOString(),
+      product: productSnapshot ? {
+        id: cleanId,
+        name: productSnapshot.name || productSnapshot.title || "Saved Piece",
+        sellPrice: Number(productSnapshot.sellPrice ?? productSnapshot.price ?? 0),
+        basePrice: Number(productSnapshot.basePrice ?? 0),
+        media: productSnapshot.media,
+        color: productSnapshot.color,
+        stock: productSnapshot.stock !== undefined ? productSnapshot.stock : 1,
+      } : {
+        id: cleanId,
+        name: "Saved Piece",
+        sellPrice: 0,
+        stock: 1,
+      },
+    };
+
     setWishlist((prev) => {
       if (
         prev.items.some(
@@ -115,18 +212,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       ) {
         return prev;
       }
-      const optimisticItem: WishlistItem = {
-        id: tempId,
-        productId: cleanId,
-        createdAt: new Date().toISOString(),
-        product: {
-          id: cleanId,
-          name: "Saved Item",
-          sellPrice: 0,
-          stock: 1,
-        },
-      };
       const nextItems = [optimisticItem, ...prev.items];
+      if (!isAuthenticated) {
+        saveGuestWishlist(nextItems);
+      }
       return {
         ...prev,
         items: nextItems,
@@ -136,18 +225,32 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
     try {
       const res = await WishlistApi.addItem(cleanId);
-      if (res.guestId && !localStorage.getItem("guest_id")) {
-        setGuestId(res.guestId);
+      const activeGuestId = res.guestId || getGuestId();
+      if (activeGuestId) {
+        setGuestId(activeGuestId);
       }
 
-      // Re-sync full wishlist details with product data from server
-      refreshWishlist();
+      if (res.item) {
+        setWishlist((prev) => {
+          const next = prev.items.map((it) =>
+            it.id === tempId ? { ...it, ...res.item, product: (res.item as any)?.product || it.product } : it,
+          );
+          if (!isAuthenticated) {
+            saveGuestWishlist(next);
+          }
+          return { ...prev, items: next };
+        });
+      }
+
       toast.success("Saved to your wishlist");
       return true;
     } catch (err: any) {
       // Rollback optimistic addition on failure
       setWishlist((prev) => {
         const nextItems = prev.items.filter((it) => it.id !== tempId);
+        if (!isAuthenticated) {
+          saveGuestWishlist(nextItems);
+        }
         return {
           ...prev,
           items: nextItems,
@@ -157,7 +260,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       toast.error(err?.response?.data?.message || "Failed to save to wishlist");
       return false;
     }
-  }, [refreshWishlist]);
+  }, [isAuthenticated]);
 
   /**
    * Remove Item from Wishlist with optimistic update
@@ -196,6 +299,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
             it.product?.id !== itemIdOrProductId &&
             it.product?.id !== cleanId,
         );
+        if (!isAuthenticated) {
+          saveGuestWishlist(nextItems);
+        }
         return {
           ...prev,
           items: nextItems,
@@ -205,29 +311,31 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
 
       try {
         await WishlistApi.removeItem(targetItemId);
-        refreshWishlist();
         toast.info("Removed from wishlist");
         return true;
       } catch (err: any) {
         // Rollback on failure
         setWishlist(prevWishlist);
+        if (!isAuthenticated) {
+          saveGuestWishlist(prevWishlist.items);
+        }
         toast.error(err?.response?.data?.message || "Failed to remove from wishlist");
         return false;
       }
     },
-    [wishlist, refreshWishlist],
+    [wishlist, isAuthenticated],
   );
 
   /**
    * Toggle item in wishlist (Optimistic)
    */
   const toggleWishlist = useCallback(
-    async (productId: string): Promise<boolean> => {
+    async (productId: string, productSnapshot?: any): Promise<boolean> => {
       if (!productId) return false;
       if (isItemWishlisted(productId)) {
         return removeFromWishlist(productId);
       } else {
-        return addToWishlist(productId);
+        return addToWishlist(productId, productSnapshot);
       }
     },
     [isItemWishlisted, removeFromWishlist, addToWishlist],
@@ -241,6 +349,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     try {
       await WishlistApi.clearWishlist();
       setWishlist(initialWishlist);
+      if (!isAuthenticated) {
+        saveGuestWishlist([]);
+      }
       toast.success("Wishlist cleared");
       return true;
     } catch (err: any) {
@@ -249,7 +360,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAuthenticated]);
 
   /**
    * Merge guest wishlist after login or signup
@@ -262,6 +373,9 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const res = await WishlistApi.mergeWishlist(guestId);
       if (res.wishlist) {
         setWishlist(res.wishlist);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem(GUEST_WISHLIST_KEY);
+        }
       }
       return res;
     } catch (err) {
@@ -286,10 +400,23 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 
-export function useWishlist() {
+const fallbackWishlistContext: WishlistContextType = {
+  wishlist: initialWishlist,
+  wishlistCount: 0,
+  loading: false,
+  addToWishlist: async () => false,
+  removeFromWishlist: async () => false,
+  toggleWishlist: async () => false,
+  isItemWishlisted: () => false,
+  clearWishlist: async () => false,
+  mergeAfterLogin: async () => null,
+  refreshWishlist: async () => {},
+};
+
+export function useWishlist(): WishlistContextType {
   const context = useContext(WishlistContext);
   if (!context) {
-    throw new Error("useWishlist must be used within a WishlistProvider");
+    return fallbackWishlistContext;
   }
   return context;
 }

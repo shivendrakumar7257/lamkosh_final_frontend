@@ -211,14 +211,18 @@ export function ClothingHomePage() {
 
   const allClothing = useMemo(() => {
     if (apiProducts.length > 0) return apiProducts;
+    if (productsLoading) return [];
+    if (publicProductsRes && selectedCategoryIds.length > 0) return [];
     return products.filter((p) => p.category === "clothing");
-  }, [apiProducts]);
+  }, [apiProducts, productsLoading, publicProductsRes, selectedCategoryIds]);
 
   // Sync to and from URL
   const handleSelectCategory = (catId: string) => {
-    const updated = selectedCategoryIds.includes(catId)
-      ? selectedCategoryIds.filter((id) => id !== catId)
-      : [...selectedCategoryIds, catId];
+    const updated = !catId
+      ? []
+      : selectedCategoryIds.includes(catId)
+        ? selectedCategoryIds.filter((id) => id !== catId)
+        : [...selectedCategoryIds, catId];
     setSelectedCategoryIds(updated);
 
     if (typeof window !== "undefined") {
@@ -229,6 +233,11 @@ export function ClothingHomePage() {
         url.searchParams.delete("categoryId");
       }
       window.history.replaceState({}, "", url.toString());
+
+      const catalogEl = document.getElementById("clothing-catalog");
+      if (catalogEl) {
+        catalogEl.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -255,7 +264,7 @@ export function ClothingHomePage() {
       // Category matching
       let matchCategory = true;
       if (selectedCategoryIds.length > 0) {
-        const prodCatId = p.categoryId;
+        const prodCatId = p.categoryId || p.category?.id;
         const prodCat = p.category?.name || p.category;
         const prodType = p.type?.toLowerCase();
 
@@ -419,7 +428,17 @@ export function ClothingHomePage() {
 
         {/* Product Cards Grid */}
         <div className="container-lux py-10">
-          {filtered.length ? (
+          {productsLoading ? (
+            <div className="grid grid-cols-2 gap-x-6 gap-y-14 lg:grid-cols-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="space-y-3 animate-pulse">
+                  <div className="aspect-[3/4] w-full rounded-sm bg-[#FAF8F5] border border-[#E7E5E4]" />
+                  <div className="h-4 w-3/4 rounded bg-[#FAF8F5]" />
+                  <div className="h-3 w-1/2 rounded bg-[#FAF8F5]" />
+                </div>
+              ))}
+            </div>
+          ) : filtered.length ? (
             <div className="grid grid-cols-2 gap-x-6 gap-y-14 lg:grid-cols-4">
               {filtered.map((p: any, i) => (
                 <Reveal key={p.id || p.handle || i} delay={(i % 4) * 80}>

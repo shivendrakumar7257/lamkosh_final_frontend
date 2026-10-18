@@ -587,7 +587,7 @@ function ProductPage() {
               type="button"
               title={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
               aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-              onClick={() => toggleWishlist(productId)}
+              onClick={() => toggleWishlist(productId, product)}
               className="grid h-11 w-11 place-items-center rounded-sm border border-[#E7E5E4] bg-white transition-all hover:border-[#6B1D2F]"
             >
               <Heart
@@ -724,5 +724,3 @@ function ProductGalleryImage({
     />
   );
 }
-
-export default ProductPage;

@@ -11,4 +11,13 @@ export default defineConfig({
     tailwindcss(),
     tsconfigPaths(),
   ],
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://api.lamokshfabric.com",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 });

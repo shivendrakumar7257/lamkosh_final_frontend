@@ -99,37 +99,72 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
             className="no-scrollbar flex items-start gap-6 sm:gap-8 overflow-x-auto py-3 px-1 scroll-smooth sm:justify-start lg:justify-center"
           >
             {/* First Item: All Weaves Circular Ring */}
-            <Link
-              to="/clothing"
-              className="group flex flex-col items-center text-center shrink-0 transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
-            >
-              <div
-                className={cn(
-                  "relative h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full p-[3px] transition-all duration-300 shadow-xs",
-                  !selectedCategoryId
-                    ? "border-2 border-[#6B1D2F] ring-4 ring-[#6B1D2F]/20"
-                    : "border-2 border-[#D4AF37]/60 group-hover:border-[#6B1D2F] group-hover:ring-4 group-hover:ring-[#6B1D2F]/15",
-                )}
+            {onSelectCategory ? (
+              <button
+                type="button"
+                onClick={() => onSelectCategory("")}
+                className="group flex flex-col items-center text-center shrink-0 transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
               >
-                <div className="h-full w-full rounded-full overflow-hidden bg-[#FAF8F5] relative border border-[#E7E5E4]/80">
-                  <img
-                    src={prodBanarasi}
-                    alt="All Weaves"
-                    loading="lazy"
-                    className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-115"
-                  />
-                  <div className="absolute inset-0 rounded-full bg-[#1C1917]/25 flex items-center justify-center transition-colors group-hover:bg-[#1C1917]/15">
-                    <Sparkles className="h-5 w-5 text-white drop-shadow-sm" />
+                <div
+                  className={cn(
+                    "relative h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full p-[3px] transition-all duration-300 shadow-xs",
+                    !selectedCategoryId
+                      ? "border-2 border-[#6B1D2F] ring-4 ring-[#6B1D2F]/20"
+                      : "border-2 border-[#D4AF37]/60 group-hover:border-[#6B1D2F] group-hover:ring-4 group-hover:ring-[#6B1D2F]/15",
+                  )}
+                >
+                  <div className="h-full w-full rounded-full overflow-hidden bg-[#FAF8F5] relative border border-[#E7E5E4]/80">
+                    <img
+                      src={prodBanarasi}
+                      alt="All Weaves"
+                      loading="lazy"
+                      className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-115"
+                    />
+                    <div className="absolute inset-0 rounded-full bg-[#1C1917]/25 flex items-center justify-center transition-colors group-hover:bg-[#1C1917]/15">
+                      <Sparkles className="h-5 w-5 text-white drop-shadow-sm" />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <span className="mt-3 font-serif text-xs sm:text-sm md:text-base font-semibold tracking-wide text-[#1C1917] group-hover:text-[#6B1D2F] transition-colors leading-tight line-clamp-2 max-w-[95px] sm:max-w-[120px]">
-                All Weaves
-              </span>
-              <span className="text-[10px] sm:text-[11px] text-[#A8A29E] font-sans mt-0.5">
-                Full Collection
-              </span>
-            </Link>
+                <span className="mt-3 font-serif text-xs sm:text-sm md:text-base font-semibold tracking-wide text-[#1C1917] group-hover:text-[#6B1D2F] transition-colors leading-tight line-clamp-2 max-w-[95px] sm:max-w-[120px]">
+                  All Weaves
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-[#A8A29E] font-sans mt-0.5">
+                  Full Collection
+                </span>
+              </button>
+            ) : (
+              <Link
+                to="/clothing"
+                className="group flex flex-col items-center text-center shrink-0 transition-transform duration-300 hover:-translate-y-1 focus:outline-none"
+              >
+                <div
+                  className={cn(
+                    "relative h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32 rounded-full p-[3px] transition-all duration-300 shadow-xs",
+                    !selectedCategoryId
+                      ? "border-2 border-[#6B1D2F] ring-4 ring-[#6B1D2F]/20"
+                      : "border-2 border-[#D4AF37]/60 group-hover:border-[#6B1D2F] group-hover:ring-4 group-hover:ring-[#6B1D2F]/15",
+                  )}
+                >
+                  <div className="h-full w-full rounded-full overflow-hidden bg-[#FAF8F5] relative border border-[#E7E5E4]/80">
+                    <img
+                      src={prodBanarasi}
+                      alt="All Weaves"
+                      loading="lazy"
+                      className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-115"
+                    />
+                    <div className="absolute inset-0 rounded-full bg-[#1C1917]/25 flex items-center justify-center transition-colors group-hover:bg-[#1C1917]/15">
+                      <Sparkles className="h-5 w-5 text-white drop-shadow-sm" />
+                    </div>
+                  </div>
+                </div>
+                <span className="mt-3 font-serif text-xs sm:text-sm md:text-base font-semibold tracking-wide text-[#1C1917] group-hover:text-[#6B1D2F] transition-colors leading-tight line-clamp-2 max-w-[95px] sm:max-w-[120px]">
+                  All Weaves
+                </span>
+                <span className="text-[10px] sm:text-[11px] text-[#A8A29E] font-sans mt-0.5">
+                  Full Collection
+                </span>
+              </Link>
+            )}
 
             {/* Category Circular Rings */}
             {categories.map((cat) => (
@@ -139,6 +174,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
                 variant="circle"
                 isActive={selectedCategoryId === cat.id}
                 onClick={() => onSelectCategory?.(cat.id)}
+                preventNavigation={Boolean(onSelectCategory)}
               />
             ))}
           </div>

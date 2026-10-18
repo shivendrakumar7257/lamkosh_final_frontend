@@ -17,6 +17,7 @@ import { useCart } from "@/context/CartContext";
 import { useAuthStore } from "@/lib/auth-store";
 import { orderService } from "@/api/orderService";
 import { CheckoutPayload, PaymentMethod } from "@/types/order";
+import { getGuestId, getOrCreateGuestId } from "@/lib/guest";
 import { formatPrice } from "@/data/catalog";
 import subcategoryBannerBg from "@/assets/subcategory-banner-bg.png";
 import { cn } from "@/lib/utils";
@@ -157,6 +158,8 @@ function CheckoutPage() {
       const cleanMobile = mobileNumber.replace(/\D/g, "");
       const cleanPincode = pincode.replace(/\D/g, "");
 
+      const currentGuestId = !isAuthenticated ? getGuestId() || getOrCreateGuestId() : undefined;
+
       const payload: CheckoutPayload = {
         name: name.trim(),
         mobileNumber: cleanMobile,
@@ -171,9 +174,10 @@ function CheckoutPage() {
         state: state.trim(),
         pincode: cleanPincode,
         paymentMethod,
+        guestId: currentGuestId,
       };
 
-      const createdOrder = await orderService.placeOrder(payload);
+      const createdOrder = await orderService.placeOrder(payload, items);
 
       // Force cart refresh
       await refreshCart();

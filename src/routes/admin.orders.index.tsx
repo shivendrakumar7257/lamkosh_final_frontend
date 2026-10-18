@@ -21,6 +21,7 @@ import { adminOrderService } from "@/api/adminOrderService";
 import { Order, OrderStatus, PaymentStatus } from "@/types/order";
 import { formatPrice } from "@/data/catalog";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/orders/")({
@@ -69,6 +70,41 @@ function AdminOrdersPage() {
     loadOrders();
   }, [loadOrders]);
 
+  const handleAcceptOrder = async (orderId: string) => {
+    setUpdatingId(orderId);
+    try {
+      const res = await adminOrderService.acceptOrder(orderId);
+      if (res.error) {
+        toast.warning(`Order Confirmed. Shiprocket notice: ${res.error}`);
+      } else {
+        toast.success("Order accepted & Shiprocket shipment created!");
+      }
+      setOrders((prev) =>
+        prev.map((o) => (o.id === res.order.id ? res.order : o)),
+      );
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to accept order."));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handleDeclineOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to decline this order? Stock will be restored to inventory.")) return;
+    setUpdatingId(orderId);
+    try {
+      const declined = await adminOrderService.declineOrder(orderId);
+      toast.success("Order declined and stock restored.");
+      setOrders((prev) =>
+        prev.map((o) => (o.id === declined.id ? { ...o, status: declined.status } : o)),
+      );
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to decline order."));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     setUpdatingId(orderId);
     try {
@@ -77,8 +113,8 @@ function AdminOrdersPage() {
       setOrders((prev) =>
         prev.map((o) => (o.id === updated.id ? { ...o, status: updated.status } : o)),
       );
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to update order status.");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to update order status."));
     } finally {
       setUpdatingId(null);
     }
@@ -300,29 +336,48 @@ function AdminOrdersPage() {
                       )}
                     </td>
 
-                    {/* Fulfillment Status & Fast Pipeline Update */}
+                    {/* Fulfillment Status & Pipeline */}
                     <td className="p-4">
-                      <div className="flex items-center gap-2">
-                        <select
-                          disabled={isUpdating}
-                          value={order.status}
-                          onChange={(e) =>
-                            handleStatusChange(order.id, e.target.value as OrderStatus)
-                          }
-                          className={cn(
-                            "px-2 py-1 text-[11px] font-semibold border rounded-[2px] bg-white cursor-pointer focus:outline-none",
-                            getStatusBadge(order.status),
-                          )}
-                        >
-                          <option value="PENDING">PENDING</option>
-                          <option value="CONFIRMED">CONFIRMED</option>
-                          <option value="PROCESSING">PROCESSING</option>
-                          <option value="SHIPPED">SHIPPED</option>
-                          <option value="DELIVERED">DELIVERED</option>
-                          <option value="CANCELLED">CANCELLED</option>
-                        </select>
-                        {isUpdating && <Loader2 className="w-3 h-3 animate-spin text-[#6B1D2F]" />}
-                      </div>
+                      {order.status === "PENDING" ? (
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleAcceptOrder(order.id)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs rounded-[2px] shadow-sm transition-colors disabled:opacity-50"
+                            title="Accept Order & Create Shiprocket Shipment"
+                          >
+                            {isUpdating ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-3.5 h-3.5" />
+                            )}
+                            <span>Accept</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={isUpdating}
+                            onClick={() => handleDeclineOrder(order.id)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs rounded-[2px] transition-colors disabled:opacity-50"
+                            title="Decline Order & Restore Stock"
+                          >
+                            <XCircle className="w-3.5 h-3.5" />
+                            <span>Decline</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              "inline-block px-2.5 py-1 text-[11px] font-semibold border rounded-[2px] uppercase",
+                              getStatusBadge(order.status),
+                            )}
+                          >
+                            {order.status}
+                          </span>
+                        </div>
+                      )}
                     </td>
 
                     {/* Actions */}
@@ -330,10 +385,15 @@ function AdminOrdersPage() {
                       <div className="flex items-center justify-end space-x-2">
                         <Link
                           to={`/admin/orders/${order.id}` as any}
-                          title="Manage Fulfillment & Shiprocket"
-                          className="p-1.5 border border-[#E7E5E4] hover:border-[#6B1D2F] bg-white text-[#1C1917] hover:text-[#6B1D2F] transition-colors"
+                          title={
+                            order.status === "PENDING"
+                              ? "Review Order Decision"
+                              : "Manage Fulfillment & Shiprocket Details"
+                          }
+                          className="px-3 py-1.5 border border-[#E7E5E4] hover:border-[#6B1D2F] bg-white text-[#1C1917] hover:text-[#6B1D2F] transition-colors inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider"
                         >
                           <Eye className="w-3.5 h-3.5" />
+                          <span>{order.status === "PENDING" ? "Review" : "Manage"}</span>
                         </Link>
                         {order.trackingToken && (
                           <Link

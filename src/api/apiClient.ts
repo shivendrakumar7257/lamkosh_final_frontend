@@ -1,6 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from "axios";
 import { toast } from "sonner";
-import { getGuestId, setGuestId } from "@/lib/guest";
+import { getGuestId, setGuestId, getOrCreateGuestId } from "@/lib/guest";
 
 export interface ApiValidationError {
   field?: string;
@@ -19,17 +19,40 @@ export interface CustomAxiosError extends AxiosError<ApiResponse> {
   validationErrors?: Record<string, string>;
 }
 
-// Configurable base URL: Defaults to production backend API, never localhost
+/**
+ * Checks whether a JWT token is expired
+ */
+export function isTokenExpired(token: string | null | undefined): boolean {
+  if (!token) return true;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(""),
+    );
+    const payload = JSON.parse(jsonPayload);
+    if (!payload.exp) return false;
+    const currentTimeSec = Math.floor(Date.now() / 1000);
+    // Buffer with 10 seconds for clock skew
+    return payload.exp <= currentTimeSec + 10;
+  } catch {
+    return false;
+  }
+}
+
+// Configurable base URL: strictly use configured environment base URL
 const rawEnvBase =
   import.meta.env.VITE_API_BASE_URL ||
   import.meta.env.NEXT_PUBLIC_API_BASE_URL ||
   import.meta.env.VITE_API_URL ||
   import.meta.env.NEXT_PUBLIC_API_URL;
 
-export const BASE_URL =
-  rawEnvBase && !rawEnvBase.includes("localhost") && !rawEnvBase.includes("127.0.0.1")
-    ? rawEnvBase
-    : "https://api.lamokshfabric.com/api/v1";
+export const BASE_URL = rawEnvBase || "https://api.lamokshfabric.com/api/v1";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -57,30 +80,18 @@ export function bindAuthMethods(
 
 /**
  * Request Interceptor
- * 1. Ensure baseURL and URL never point to localhost
- * 2. Read token from auth store/localStorage: if present, append Authorization: Bearer ${token}.
- * 3. Read guestId from localStorage.getItem('guest_id'): if present, append X-Guest-ID: ${guestId}.
+ * 1. Read token from auth store/localStorage: if present & valid, append Authorization: Bearer ${token}.
  */
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Ensure baseURL never points to localhost or 127.0.0.1
-    if (config.baseURL && (config.baseURL.includes("localhost") || config.baseURL.includes("127.0.0.1"))) {
-      config.baseURL = BASE_URL;
-    }
-    // If request URL has localhost, strip it and use baseURL
-    if (config.url && (config.url.includes("localhost") || config.url.includes("127.0.0.1"))) {
-      config.url = config.url
-        .replace(/^https?:\/\/localhost(:\d+)?(\/api\/v1)?/, "")
-        .replace(/^https?:\/\/127\.0\.0\.1(:\d+)?(\/api\/v1)?/, "");
-      if (!config.url.startsWith("/")) {
-        config.url = `/${config.url}`;
-      }
-    }
+    const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+    const isCurrentAdmin = currentPath.startsWith("/admin");
 
     let token = getAccessTokenFn();
     if (!token && typeof window !== "undefined") {
       token = localStorage.getItem("accessToken") || localStorage.getItem("token");
-      if (!token) {
+      // Only check admin sessions if explicitly navigating an admin page
+      if (!token && isCurrentAdmin) {
         try {
           const raw =
             sessionStorage.getItem("lamoksh_admin_session") ||
@@ -94,17 +105,21 @@ apiClient.interceptors.request.use(
         } catch {}
       }
     }
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+
+    // Check if token is expired
+    if (token && isTokenExpired(token)) {
+      token = null;
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("token");
+      }
     }
 
-    const guestId =
-      getGuestId() ||
-      (typeof window !== "undefined"
-        ? localStorage.getItem("guestId") || localStorage.getItem("guest_id")
-        : null);
-    if (guestId && config.headers && !config.headers["X-Guest-ID"] && !token) {
-      config.headers["X-Guest-ID"] = guestId;
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
+    } else if (config.headers) {
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
     }
 
     if (config.data instanceof FormData && config.headers) {
@@ -222,107 +237,129 @@ apiClient.interceptors.response.use(
       }
     }
 
-    // Handle 401 Unauthorized - Silent Refresh Queue
-    if (status === 401 && originalRequest && !originalRequest._retry) {
-      const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
-      const isCurrentAdmin = currentPath.startsWith("/admin");
-
+    // Handle 401 Unauthorized - Guest retry or Silent Refresh Queue
+    if (status === 401 && originalRequest) {
       const url = originalRequest.url || "";
-      const isAuthEndpoint =
-        url.includes("/auth/refresh-token") ||
-        url.includes("/auth/login") ||
-        url.includes("/auth/signup") ||
-        url.includes("/auth/logout") ||
-        url.includes("/auth/forgot-password") ||
-        url.includes("/auth/reset-password");
+      const isCartOrWishlist =
+        (url.includes("/cart") || url.includes("/wishlist")) &&
+        !url.includes("/merge");
 
-      if (isAuthEndpoint) {
-        return Promise.reject(error);
-      }
-
-      // If on an admin route, do NOT trigger customer logout or redirect to customer /login
-      if (isCurrentAdmin) {
-        return Promise.reject(error);
-      }
-
-      const localRefreshToken =
-        typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null;
-      if (!localRefreshToken) {
-        logoutFn();
+      // If a cart or wishlist request fails with 401 (e.g. invalid or expired auth token),
+      // purge the invalid token and retry once as a guest with X-Guest-ID!
+      if (isCartOrWishlist && !(originalRequest as any)._retriedAsGuest) {
+        (originalRequest as any)._retriedAsGuest = true;
         if (typeof window !== "undefined") {
           localStorage.removeItem("accessToken");
+          localStorage.removeItem("token");
           localStorage.removeItem("refreshToken");
-          window.dispatchEvent(new CustomEvent("auth:logout"));
         }
-        return Promise.reject(error);
+        if (originalRequest.headers) {
+          delete originalRequest.headers.Authorization;
+          delete originalRequest.headers.authorization;
+        }
+        return apiClient(originalRequest);
       }
 
-      if (isRefreshing) {
-        return new Promise<string>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((newToken) => {
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${newToken}`;
-            }
-            return apiClient(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
+      if (!originalRequest._retry) {
+        const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+        const isCurrentAdmin = currentPath.startsWith("/admin");
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+        const isAuthEndpoint =
+          url.includes("/auth/refresh-token") ||
+          url.includes("/auth/login") ||
+          url.includes("/auth/signup") ||
+          url.includes("/auth/logout") ||
+          url.includes("/auth/forgot-password") ||
+          url.includes("/auth/reset-password");
 
-      try {
-        const refreshResponse = await axios.post<
-          ApiResponse<{ accessToken: string; refreshToken?: string; user?: any }>
-        >(
-          `${BASE_URL}/auth/refresh-token`,
-          { refreshToken: localRefreshToken },
-          { withCredentials: true },
-        );
+        if (isAuthEndpoint) {
+          return Promise.reject(error);
+        }
 
-        const newAccessToken =
-          refreshResponse.data?.data?.accessToken || (refreshResponse.data as any)?.accessToken;
-        const newRefreshToken =
-          refreshResponse.data?.data?.refreshToken || (refreshResponse.data as any)?.refreshToken;
+        // If on an admin route, do NOT trigger customer logout or redirect to customer /login
+        if (isCurrentAdmin) {
+          return Promise.reject(error);
+        }
 
-        if (newAccessToken) {
-          setAccessTokenFn(newAccessToken);
+        const localRefreshToken =
+          typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null;
+        if (!localRefreshToken) {
+          logoutFn();
           if (typeof window !== "undefined") {
-            localStorage.setItem("accessToken", newAccessToken);
-            if (newRefreshToken) {
-              localStorage.setItem("refreshToken", newRefreshToken);
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            window.dispatchEvent(new CustomEvent("auth:logout"));
+          }
+          return Promise.reject(error);
+        }
+
+        if (isRefreshing) {
+          return new Promise<string>((resolve, reject) => {
+            failedQueue.push({ resolve, reject });
+          })
+            .then((newToken) => {
+              if (originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              }
+              return apiClient(originalRequest);
+            })
+            .catch((err) => Promise.reject(err));
+        }
+
+        originalRequest._retry = true;
+        isRefreshing = true;
+
+        try {
+          const refreshResponse = await axios.post<
+            ApiResponse<{ accessToken: string; refreshToken?: string; user?: any }>
+          >(
+            `${BASE_URL}/auth/refresh-token`,
+            { refreshToken: localRefreshToken },
+            { withCredentials: true },
+          );
+
+          const newAccessToken =
+            refreshResponse.data?.data?.accessToken || (refreshResponse.data as any)?.accessToken;
+          const newRefreshToken =
+            refreshResponse.data?.data?.refreshToken || (refreshResponse.data as any)?.refreshToken;
+
+          if (newAccessToken) {
+            setAccessTokenFn(newAccessToken);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("accessToken", newAccessToken);
+              if (newRefreshToken) {
+                localStorage.setItem("refreshToken", newRefreshToken);
+              }
+            }
+
+            if (originalRequest.headers) {
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            }
+
+            processQueue(null, newAccessToken);
+            return apiClient(originalRequest);
+          } else {
+            throw new Error("No access token returned from refresh");
+          }
+        } catch (refreshErr) {
+          processQueue(refreshErr, null);
+          logoutFn();
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            window.dispatchEvent(new CustomEvent("auth:logout"));
+            const protectedRoutes = ["/checkout", "/account", "/orders", "/profile"];
+            const isProtected = protectedRoutes.some((p) =>
+              window.location.pathname.startsWith(p),
+            );
+            if (isProtected) {
+              window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
             }
           }
-
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          }
-
-          processQueue(null, newAccessToken);
-          return apiClient(originalRequest);
-        } else {
-          throw new Error("No access token returned from refresh");
+          return Promise.reject(refreshErr);
+        } finally {
+          isRefreshing = false;
         }
-      } catch (refreshErr) {
-        processQueue(refreshErr, null);
-        logoutFn();
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-          window.dispatchEvent(new CustomEvent("auth:logout"));
-          if (
-            !window.location.pathname.startsWith("/login") &&
-            !window.location.pathname.startsWith("/signup") &&
-            !window.location.pathname.startsWith("/admin")
-          ) {
-            window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-          }
-        }
-        return Promise.reject(refreshErr);
-      } finally {
-        isRefreshing = false;
       }
     }
 

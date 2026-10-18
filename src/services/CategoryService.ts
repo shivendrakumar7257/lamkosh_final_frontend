@@ -31,42 +31,30 @@ export const CategoryService = {
       },
     });
 
-    const payload = res.data?.data;
+    const payload = res.data?.data ?? res.data;
+    const categoriesList =
+      Array.isArray(payload?.categories)
+        ? payload.categories
+        : Array.isArray(res.data?.categories)
+          ? res.data.categories
+          : Array.isArray(payload)
+            ? payload
+            : Array.isArray(res.data)
+              ? res.data
+              : [];
 
-    // Handle standard envelope { categories: Category[], meta: PaginationMeta }
-    if (payload && Array.isArray(payload.categories)) {
-      return {
-        categories: payload.categories,
-        meta: payload.meta || {
-          total: payload.categories.length,
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 20,
-          totalPages: Math.ceil(payload.categories.length / (params?.limit ?? 20)) || 1,
-        },
-      };
-    }
-
-    // Direct array fallback
-    if (Array.isArray(payload)) {
-      return {
-        categories: payload,
-        meta: {
-          total: payload.length,
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 20,
-          totalPages: 1,
-        },
-      };
-    }
-
-    return {
-      categories: [],
-      meta: {
-        total: 0,
+    const meta =
+      payload?.meta ||
+      res.data?.meta || {
+        total: categoriesList.length,
         page: params?.page ?? 1,
         limit: params?.limit ?? 20,
-        totalPages: 0,
-      },
+        totalPages: Math.ceil(categoriesList.length / (params?.limit ?? 20)) || 1,
+      };
+
+    return {
+      categories: categoriesList,
+      meta,
     };
   },
 
@@ -105,40 +93,30 @@ export const CategoryService = {
       },
     });
 
-    const payload = res.data?.data;
+    const payload = res.data?.data ?? res.data;
+    const productsList =
+      Array.isArray(payload?.products)
+        ? payload.products
+        : Array.isArray(res.data?.products)
+          ? res.data.products
+          : Array.isArray(payload)
+            ? payload
+            : Array.isArray(res.data)
+              ? res.data
+              : [];
 
-    if (payload && Array.isArray(payload.products)) {
-      return {
-        products: payload.products,
-        meta: payload.meta || {
-          total: payload.products.length,
-          page: params.page ?? 1,
-          limit: params.limit ?? 20,
-          totalPages: Math.ceil(payload.products.length / (params.limit ?? 20)) || 1,
-        },
-      };
-    }
-
-    if (Array.isArray(payload)) {
-      return {
-        products: payload,
-        meta: {
-          total: payload.length,
-          page: params.page ?? 1,
-          limit: params.limit ?? 20,
-          totalPages: 1,
-        },
-      };
-    }
-
-    return {
-      products: [],
-      meta: {
-        total: 0,
+    const meta =
+      payload?.meta ||
+      res.data?.meta || {
+        total: productsList.length,
         page: params.page ?? 1,
         limit: params.limit ?? 20,
-        totalPages: 0,
-      },
+        totalPages: Math.ceil(productsList.length / (params.limit ?? 20)) || 1,
+      };
+
+    return {
+      products: productsList,
+      meta,
     };
   },
 
@@ -155,40 +133,30 @@ export const CategoryService = {
       },
     });
 
-    const payload = res.data?.data;
+    const payload = res.data?.data ?? res.data;
+    const categoriesList =
+      Array.isArray(payload?.categories)
+        ? payload.categories
+        : Array.isArray(res.data?.categories)
+          ? res.data.categories
+          : Array.isArray(payload)
+            ? payload
+            : Array.isArray(res.data)
+              ? res.data
+              : [];
 
-    if (payload && Array.isArray(payload.categories)) {
-      return {
-        categories: payload.categories,
-        meta: payload.meta || {
-          total: payload.categories.length,
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 20,
-          totalPages: Math.ceil(payload.categories.length / (params?.limit ?? 20)) || 1,
-        },
-      };
-    }
-
-    if (Array.isArray(payload)) {
-      return {
-        categories: payload,
-        meta: {
-          total: payload.length,
-          page: params?.page ?? 1,
-          limit: params?.limit ?? 20,
-          totalPages: 1,
-        },
-      };
-    }
-
-    return {
-      categories: [],
-      meta: {
-        total: 0,
+    const meta =
+      payload?.meta ||
+      res.data?.meta || {
+        total: categoriesList.length,
         page: params?.page ?? 1,
         limit: params?.limit ?? 20,
-        totalPages: 0,
-      },
+        totalPages: Math.ceil(categoriesList.length / (params?.limit ?? 20)) || 1,
+      };
+
+    return {
+      categories: categoriesList,
+      meta,
     };
   },
 

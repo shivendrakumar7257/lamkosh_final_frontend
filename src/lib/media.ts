@@ -11,15 +11,7 @@ export function getMediaUrl(path?: string | null): string {
   // Derive backend origin from BASE_URL (stripping /api/v1)
   const backendOrigin = BASE_URL.replace(/\/api\/v1\/?$/, "");
 
-  // If path contains localhost or 127.0.0.1, strip localhost and replace with backend origin
-  if (path.includes("localhost") || path.includes("127.0.0.1")) {
-    const withoutHost = path
-      .replace(/^https?:\/\/localhost(:\d+)?/, "")
-      .replace(/^https?:\/\/127\.0\.0\.1(:\d+)?/, "");
-    const cleanPath = withoutHost.startsWith("/") ? withoutHost : `/${withoutHost}`;
-    return `${backendOrigin}${cleanPath}`;
-  }
-
+  // If already absolute URL or data URI, return as-is
   if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) {
     return path;
   }

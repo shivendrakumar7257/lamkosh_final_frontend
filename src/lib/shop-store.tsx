@@ -176,8 +176,27 @@ export function ShopProvider({ children }: { children: ReactNode }) {
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
 }
 
-export function useShop() {
+const fallbackShopState: ShopState = {
+  cart: [],
+  wishlist: [],
+  recent: [],
+  cartOpen: false,
+  searchOpen: false,
+  addToCart: () => {},
+  setQty: () => {},
+  removeLine: () => {},
+  clearCart: () => {},
+  toggleWishlist: () => {},
+  markViewed: () => {},
+  setCartOpen: () => {},
+  setSearchOpen: () => {},
+  cartCount: 0,
+  subtotal: 0,
+  lines: [],
+};
+
+export function useShop(): ShopState {
   const ctx = useContext(ShopContext);
-  if (!ctx) throw new Error("useShop must be used within ShopProvider");
+  if (!ctx) return fallbackShopState;
   return ctx;
 }

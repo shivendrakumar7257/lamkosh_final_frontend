@@ -1,5 +1,7 @@
 import { apiClient, ApiResponse } from "./apiClient";
 import { Order, CheckoutPayload, TrackingData, OrdersListResponse } from "@/types/order";
+import { getGuestId, setGuestId } from "@/lib/guest";
+import { CartApi } from "@/lib/api/cart.api";
 
 export interface StoredGuestOrder {
   orderNumber: string;
@@ -9,9 +11,64 @@ export interface StoredGuestOrder {
 
 export const orderService = {
   // 1. Submit checkout & create order
-  placeOrder: async (payload: CheckoutPayload): Promise<Order> => {
-    const res = await apiClient.post<ApiResponse<Order>>("/orders", payload);
-    const order = res.data.data;
+  placeOrder: async (payload: CheckoutPayload, fallbackCartItems?: any[]): Promise<Order> => {
+    let currentGuestId = payload.guestId || getGuestId();
+    let finalPayload: CheckoutPayload = {
+      ...payload,
+      ...(currentGuestId ? { guestId: currentGuestId } : {}),
+    };
+
+    let order: Order | undefined;
+
+    try {
+      const res = await apiClient.post<ApiResponse<Order>>("/orders", finalPayload);
+      order = res.data.data;
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || err?.message || "";
+      // Self-healing recovery: If backend cart was empty (e.g. session mismatch) but client has items,
+      // re-sync items to the backend cart and immediately retry placing the order!
+      if (
+        (msg.toLowerCase().includes("cart is empty") || err?.response?.status === 400) &&
+        Array.isArray(fallbackCartItems) &&
+        fallbackCartItems.length > 0
+      ) {
+        console.warn("Backend reported empty cart during checkout. Auto-syncing cart items to backend...");
+        let syncedGuestId = currentGuestId;
+        for (const item of fallbackCartItems) {
+          try {
+            const addRes = await CartApi.addItem({
+              productId: item.productId,
+              variantId: item.variantId || undefined,
+              quantity: item.quantity || 1,
+            });
+            if (addRes.guestId) {
+              syncedGuestId = addRes.guestId;
+              setGuestId(addRes.guestId);
+            }
+          } catch (syncErr) {
+            console.warn("Failed to sync item to cart:", item, syncErr);
+          }
+        }
+
+        finalPayload = {
+          ...payload,
+          guestId: syncedGuestId || getGuestId() || undefined,
+        };
+        const retryRes = await apiClient.post<ApiResponse<Order>>("/orders", finalPayload);
+        order = retryRes.data.data;
+      } else {
+        throw err;
+      }
+    }
+
+    if (!order) {
+      throw new Error("Failed to receive order response");
+    }
+
+    // Clean up local guest cart on order success
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("lamoksh_guest_cart");
+    }
 
     // If guest or has trackingToken, save tracking token for instant order tracking
     if (typeof window !== "undefined" && order && order.trackingToken) {

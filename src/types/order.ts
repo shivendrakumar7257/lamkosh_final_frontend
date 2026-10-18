@@ -32,6 +32,7 @@ export interface CheckoutPayload {
   state: string; // Required
   pincode: string; // Exactly 6 digits: /^\d{6}$/
   paymentMethod?: PaymentMethod; // 'CASH_ON_DELIVERY' (default) or 'ONLINE'
+  guestId?: string | null; // Optional guest ID for guest checkout
 }
 
 // Order Item Snapshot

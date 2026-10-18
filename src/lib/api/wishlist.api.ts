@@ -1,4 +1,5 @@
 import { api, ApiResponse } from "@/lib/api";
+import { getGuestId, getOrCreateGuestId, setGuestId } from "@/lib/guest";
 import {
   WishlistItem,
   WishlistObject,
@@ -8,7 +9,7 @@ import {
 } from "@/types/wishlist";
 
 /**
- * Strips any protocol, localhost hostnames, or blob URLs from IDs
+ * Strips any protocol, hostnames, or blob URLs from IDs
  */
 function sanitizeId(id: string): string {
   if (!id) return "";
@@ -22,16 +23,24 @@ export const WishlistApi = {
   /**
    * POST /api/v1/wishlist/items
    * Add Item to Wishlist
-   * Body: { productId: string }
-   * Auth: Optional (Bearer token OR X-Guest-ID automatically attached)
+   * Body: { productId: string, guestId?: string }
    */
   addItem: async (productId: string): Promise<{ item?: WishlistItem; guestId?: string }> => {
     const cleanId = sanitizeId(productId);
-    const res = await api.post<ApiResponse<any>>("/wishlist/items", { productId: cleanId });
+    const guestId = getGuestId() || getOrCreateGuestId();
+    const body: Record<string, any> = { productId: cleanId };
+    if (guestId) {
+      body.guestId = guestId;
+    }
+    const res = await api.post<ApiResponse<any>>("/wishlist/items", body);
     const data = res.data?.data || res.data;
+    const serverGuestId = data?.guestId || (res.headers && res.headers["x-guest-id"]);
+    if (serverGuestId) {
+      setGuestId(serverGuestId);
+    }
     return {
       item: data?.item || (data?.id ? data : undefined),
-      guestId: data?.guestId,
+      guestId: serverGuestId || data?.guestId,
     };
   },
 
@@ -40,15 +49,22 @@ export const WishlistApi = {
    * Retrieve current user or guest wishlist
    */
   getWishlist: async (): Promise<WishlistResponseData> => {
-    const res = await api.get<ApiResponse<any>>("/wishlist");
+    const guestId = getGuestId();
+    const res = await api.get<ApiResponse<any>>("/wishlist", {
+      params: guestId ? { guestId } : undefined,
+    });
     const data = res.data?.data || res.data;
+    const serverGuestId = data?.guestId || (res.headers && res.headers["x-guest-id"]);
+    if (serverGuestId && !guestId) {
+      setGuestId(serverGuestId);
+    }
 
     if (data?.wishlist) {
-      return { wishlist: data.wishlist, guestId: data.guestId };
+      return { wishlist: data.wishlist, guestId: serverGuestId || data.guestId };
     }
     return {
       wishlist: (data?.items ? data : { items: [], totalItems: 0 }) as WishlistObject,
-      guestId: data?.guestId,
+      guestId: serverGuestId || data?.guestId,
     };
   },
 
@@ -58,7 +74,10 @@ export const WishlistApi = {
    */
   removeItem: async (itemId: string): Promise<void> => {
     const cleanId = sanitizeId(itemId);
-    await api.delete<ApiResponse<any>>(`/wishlist/items/${cleanId}`);
+    const guestId = getGuestId();
+    await api.delete<ApiResponse<any>>(`/wishlist/items/${cleanId}`, {
+      data: guestId ? { guestId } : undefined,
+    });
   },
 
   /**
@@ -66,7 +85,10 @@ export const WishlistApi = {
    * Clear all items from wishlist
    */
   clearWishlist: async (): Promise<void> => {
-    await api.delete<ApiResponse<any>>("/wishlist");
+    const guestId = getGuestId();
+    await api.delete<ApiResponse<any>>("/wishlist", {
+      data: guestId ? { guestId } : undefined,
+    });
   },
 
   /**
@@ -75,7 +97,10 @@ export const WishlistApi = {
    */
   checkItem: async (productId: string): Promise<WishlistCheckResponse> => {
     const cleanId = sanitizeId(productId);
-    const res = await api.get<ApiResponse<any>>(`/wishlist/check/${cleanId}`);
+    const guestId = getGuestId();
+    const res = await api.get<ApiResponse<any>>(`/wishlist/check/${cleanId}`, {
+      params: guestId ? { guestId } : undefined,
+    });
     const data = res.data?.data || res.data;
     return {
       productId: cleanId,

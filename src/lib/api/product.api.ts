@@ -75,24 +75,30 @@ export const ProductApi = {
    */
   getAdminProducts: async (params?: ProductFilterParams): Promise<ProductListResponse> => {
     const res = await api.get<ApiResponse<any>>("/admin/products", { params });
-    const payload = res.data?.data;
-    if (payload?.products && payload?.meta) {
-      return payload as ProductListResponse;
-    }
-    if (Array.isArray(payload)) {
-      return {
-        products: payload,
-        meta: {
-          total: payload.length,
-          page: params?.page || 1,
-          limit: params?.limit || payload.length,
-          totalPages: 1,
-        },
+    const payload = res.data?.data ?? res.data;
+    const productsList =
+      Array.isArray(payload?.products)
+        ? payload.products
+        : Array.isArray(res.data?.products)
+          ? res.data.products
+          : Array.isArray(payload)
+            ? payload
+            : Array.isArray(res.data)
+              ? res.data
+              : [];
+
+    const meta =
+      payload?.meta ||
+      res.data?.meta || {
+        total: productsList.length,
+        page: params?.page || 1,
+        limit: params?.limit || (productsList.length || 20),
+        totalPages: Math.ceil(productsList.length / (params?.limit || 20)) || 1,
       };
-    }
+
     return {
-      products: payload?.products || [],
-      meta: payload?.meta || { total: 0, page: 1, limit: 20, totalPages: 1 },
+      products: productsList,
+      meta,
     };
   },
 
@@ -102,7 +108,7 @@ export const ProductApi = {
    */
   getAdminProductById: async (id: string): Promise<Product> => {
     const res = await api.get<ApiResponse<any>>(`/admin/products/${id}`);
-    const payload = res.data?.data;
+    const payload = res.data?.data ?? res.data;
     return (payload?.product || payload) as Product;
   },
 
@@ -114,7 +120,7 @@ export const ProductApi = {
   updateProduct: async (id: string, dto: UpdateProductDto): Promise<Product> => {
     const formData = buildProductFormData(dto);
     const res = await api.put<ApiResponse<any>>(`/admin/products/${id}`, formData);
-    const payload = res.data?.data;
+    const payload = res.data?.data ?? res.data;
     return (payload?.product || payload) as Product;
   },
 
@@ -136,24 +142,30 @@ export const ProductApi = {
    */
   getPublicProducts: async (params?: ProductFilterParams): Promise<ProductListResponse> => {
     const res = await api.get<ApiResponse<any>>("/products", { params });
-    const payload = res.data?.data;
-    if (payload?.products && payload?.meta) {
-      return payload as ProductListResponse;
-    }
-    if (Array.isArray(payload)) {
-      return {
-        products: payload,
-        meta: {
-          total: payload.length,
-          page: params?.page || 1,
-          limit: params?.limit || payload.length,
-          totalPages: 1,
-        },
+    const payload = res.data?.data ?? res.data;
+    const productsList =
+      Array.isArray(payload?.products)
+        ? payload.products
+        : Array.isArray(res.data?.products)
+          ? res.data.products
+          : Array.isArray(payload)
+            ? payload
+            : Array.isArray(res.data)
+              ? res.data
+              : [];
+
+    const meta =
+      payload?.meta ||
+      res.data?.meta || {
+        total: productsList.length,
+        page: params?.page || 1,
+        limit: params?.limit || (productsList.length || 20),
+        totalPages: Math.ceil(productsList.length / (params?.limit || 20)) || 1,
       };
-    }
+
     return {
-      products: payload?.products || [],
-      meta: payload?.meta || { total: 0, page: 1, limit: 20, totalPages: 1 },
+      products: productsList,
+      meta,
     };
   },
 

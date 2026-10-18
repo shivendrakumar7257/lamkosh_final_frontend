@@ -1,4 +1,4 @@
-import { apiClient, ApiResponse } from "./apiClient";
+import { apiClient, ApiResponse, getErrorMessage } from "./apiClient";
 import {
   Order,
   OrderStatus,
@@ -51,7 +51,7 @@ export const adminOrderService = {
 
   // Get single order for admin
   getOrderById: async (orderId: string): Promise<Order> => {
-    const res = await apiClient.get<ApiResponse<Order>>(`/orders/${orderId}`);
+    const res = await apiClient.get<ApiResponse<Order>>(`/admin/orders/${orderId}`);
     return res.data.data;
   },
 
@@ -62,6 +62,60 @@ export const adminOrderService = {
   ): Promise<Order> => {
     const res = await apiClient.patch<ApiResponse<Order>>(`/admin/orders/${orderId}/status`, data);
     return res.data.data;
+  },
+
+  // Accept Order: Transitions order to CONFIRMED and automatically creates Shiprocket shipment
+  acceptOrder: async (
+    orderId: string,
+    dimensions?: ShipmentDimensionPayload,
+  ): Promise<{ order: Order; shipment?: Shipment; error?: string }> => {
+    // 1. Update order status to CONFIRMED
+    const updatedOrder = await adminOrderService.updateOrderStatus(orderId, { status: "CONFIRMED" });
+
+    // 2. Automatically trigger Shiprocket shipment creation API
+    let shipment: Shipment | undefined;
+    let shiprocketError: string | undefined;
+
+    try {
+      const res = await adminOrderService.createShipment(orderId, {
+        weight: 0.5,
+        length: 10,
+        breadth: 10,
+        height: 10,
+        pickupLocation: "Home",
+        ...dimensions,
+      });
+      shipment = res.shipment;
+    } catch (err: unknown) {
+      shiprocketError = getErrorMessage(
+        err,
+        "Shiprocket order creation failed. You can review or retry in the shipping panel.",
+      );
+    }
+
+    // 3. Fetch latest order snapshot from admin endpoint
+    try {
+      const freshOrder = await adminOrderService.getOrderById(orderId);
+      return {
+        order: freshOrder,
+        shipment: shipment || freshOrder.shipment || undefined,
+        error: shiprocketError,
+      };
+    } catch {
+      return {
+        order: {
+          ...updatedOrder,
+          ...(shipment ? { shipment } : {}),
+        },
+        shipment: shipment || updatedOrder.shipment || undefined,
+        error: shiprocketError,
+      };
+    }
+  },
+
+  // Decline Order: Transitions order to CANCELLED and restores inventory stock
+  declineOrder: async (orderId: string): Promise<Order> => {
+    return await adminOrderService.updateOrderStatus(orderId, { status: "CANCELLED" });
   },
 
   // 3. Courier Serviceability Check
@@ -77,10 +131,21 @@ export const adminOrderService = {
     if (params.cod !== undefined) query.append("cod", String(params.cod));
     if (params.orderId) query.append("orderId", params.orderId);
 
-    const res = await apiClient.get<ApiResponse<CourierServiceabilityResponse>>(
+    const res = await apiClient.get<ApiResponse<any>>(
       `/admin/shipping/serviceability?${query.toString()}`,
     );
-    return res.data.data;
+    const raw = res.data.data;
+    const couriers =
+      raw?.data?.available_courier_companies ||
+      raw?.available_courier_companies ||
+      (Array.isArray(raw?.data) ? raw?.data : []);
+
+    return {
+      available_courier_companies: couriers,
+      recommended_courier_company_id:
+        raw?.data?.recommended_courier_company_id || raw?.recommended_courier_company_id,
+      ...raw,
+    };
   },
 
   // 4. Create Shiprocket Shipment
@@ -90,7 +155,14 @@ export const adminOrderService = {
   ): Promise<{ shipment: Shipment; [key: string]: any }> => {
     const res = await apiClient.post<ApiResponse<any>>(
       `/admin/shipping/orders/${orderId}/create`,
-      payload,
+      {
+        pickupLocation: "Home",
+        weight: 0.5,
+        length: 10,
+        breadth: 10,
+        height: 10,
+        ...payload,
+      },
     );
     return res.data.data;
   },
@@ -102,7 +174,14 @@ export const adminOrderService = {
   ): Promise<{ shipment: Shipment; [key: string]: any }> => {
     const res = await apiClient.post<ApiResponse<any>>(
       `/admin/shipping/orders/${orderId}/retry`,
-      payload,
+      {
+        pickupLocation: "Home",
+        weight: 0.5,
+        length: 10,
+        breadth: 10,
+        height: 10,
+        ...payload,
+      },
     );
     return res.data.data;
   },

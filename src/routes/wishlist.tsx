@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Loader2, Trash2, Heart } from "lucide-react";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -7,6 +7,9 @@ import { getProduct, images } from "@/data/catalog";
 import { dbStore } from "@/lib/db/store";
 import { getMediaUrl } from "@/lib/media";
 import { useWishlist } from "@/context/WishlistContext";
+import { usePublicProducts } from "@/hooks/use-products";
+import { ProductApi } from "@/lib/api/product.api";
+import { getCategoryNonModelImage } from "@/components/site/CategoryCard";
 
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
@@ -28,72 +31,116 @@ export const Route = createFileRoute("/wishlist")({
 
 function WishlistPage() {
   const { wishlist, wishlistCount, loading, clearWishlist, removeFromWishlist } = useWishlist();
+  const { data: publicProductsRes } = usePublicProducts({ page: 1, limit: 100 });
+  const apiProducts = publicProductsRes?.products || [];
 
   const items = wishlist?.items || [];
+  const [extraProducts, setExtraProducts] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    items.forEach((it) => {
+      const pid = it.productId;
+      if (!pid) return;
+      const alreadyHas =
+        apiProducts.some((p: any) => p.id === pid || p.handle === pid) ||
+        (it.product && it.product.media && it.product.media.length > 0) ||
+        extraProducts[pid];
+      if (!alreadyHas) {
+        ProductApi.getPublicProductById(pid)
+          .then((fetched) => {
+            if (fetched) {
+              setExtraProducts((prev) => ({ ...prev, [pid]: fetched }));
+            }
+          })
+          .catch(() => {});
+      }
+    });
+  }, [items, apiProducts, extraProducts]);
 
   const savedProducts = useMemo(() => {
     return items.map((it) => {
-      // Check catalog by handle or productId
+      // 1. Primary: Match from live public products API or fetched extraProducts
+      const extra = extraProducts[it.productId];
+      const apiProd =
+        apiProducts.find(
+          (p: any) =>
+            p.id === it.productId ||
+            p.handle === it.productId ||
+            (p.name && it.product?.name && p.name.trim().toLowerCase() === it.product.name.trim().toLowerCase()),
+        ) || extra;
+
+      // 2. Secondary: Backend WishlistProduct from it.product
+      const p = (it.product && it.product.name !== "Saved Piece" ? it.product : apiProd) || it.product || ({} as any);
+
+      // 3. Fallback: catalog or local dbStore
       const seed =
         getProduct(it.productId) ||
-        dbStore.getProducts().find((p) => p.handle === it.productId || p.id === it.productId);
+        dbStore.getProducts().find((s) => s.handle === it.productId || s.id === it.productId);
 
-      if (seed) {
-        return {
-          ...seed,
-          wishlistItemId: it.id,
-        };
-      }
+      // Collect all candidate images from all sources, prioritizing live API and backend media
+      const rawCandidates = [
+        ...(Array.isArray(p.media) ? p.media : []),
+        ...(apiProd && Array.isArray(apiProd.media) ? apiProd.media : []),
+        ...(extra && Array.isArray(extra.media) ? extra.media : []),
+        ...(Array.isArray(p.images) ? p.images : []),
+        ...(apiProd && Array.isArray(apiProd.images) ? apiProd.images : []),
+        ...(seed && Array.isArray(seed.images) ? seed.images : []),
+        p.imageUrl,
+        apiProd?.imageUrl,
+      ];
 
-      // Convert backend WishlistProduct to standard product shape for ProductCard
-      const p = it.product || ({} as any);
-
-      const mediaImages = (p.media || [])
-        .filter(
-          (m: any) =>
-            m &&
-            m.type !== "VIDEO" &&
-            !(typeof m.url === "string" && (m.url.startsWith("blob:") || m.url.toLowerCase().endsWith(".mp4"))),
-        )
+      const resolvedImages = rawCandidates
         .map((m: any) => {
-          const raw = typeof m === "string" ? m : m?.url || m?.imageUrl;
-          return raw ? getMediaUrl(raw) : "";
+          if (!m) return "";
+          const raw = typeof m === "string" ? m : m.url || m.imageUrl;
+          if (raw && typeof raw === "string" && !raw.startsWith("blob:") && !raw.toLowerCase().endsWith(".mp4")) {
+            return getMediaUrl(raw);
+          }
+          return "";
         })
-        .filter((url: string) => Boolean(url) && !url.startsWith("blob:"));
+        .filter(Boolean);
 
-      const directImages = (p.images || [])
-        .map((img: any) => {
-          const raw = typeof img === "string" ? img : img?.url || img?.imageUrl;
-          return raw ? getMediaUrl(raw) : "";
-        })
-        .filter((url: string) => Boolean(url) && !url.startsWith("blob:"));
+      const title = p.name || apiProd?.name || seed?.title || "Handcrafted Piece";
+      const fallbackImg = getCategoryNonModelImage(
+        p.category?.name || apiProd?.category?.name || seed?.type || p.color || title,
+        p.id || it.productId,
+      );
 
-      const resolvedImages = mediaImages.length > 0 ? mediaImages : directImages;
+      const finalImages = resolvedImages.length > 0 ? resolvedImages : [fallbackImg];
+      const validMedia =
+        Array.isArray(p.media) && p.media.length > 0
+          ? p.media
+          : apiProd?.media && apiProd.media.length > 0
+            ? apiProd.media
+            : [{ id: "fallback-media", type: "IMAGE", url: fallbackImg, sortOrder: 0 }];
 
       return {
-        id: p.id || it.productId,
-        handle: p.handle || p.id || it.productId,
-        title: p.name || "Handcrafted Piece",
-        name: p.name || "Handcrafted Piece",
-        price: p.sellPrice || p.basePrice || 0,
-        sellPrice: p.sellPrice || p.basePrice || 0,
+        id: p.id || apiProd?.id || seed?.id || it.productId,
+        handle: p.handle || apiProd?.id || seed?.handle || p.id || it.productId,
+        title,
+        name: title,
+        price: Number(p.sellPrice ?? apiProd?.sellPrice ?? seed?.price ?? 0),
+        sellPrice: Number(p.sellPrice ?? apiProd?.sellPrice ?? seed?.price ?? 0),
+        basePrice: Number(p.basePrice ?? apiProd?.basePrice ?? seed?.basePrice ?? 0),
         category: "clothing" as const,
-        type: p.color || "Handcrafted Saree / Suit",
+        type: p.category?.name || apiProd?.category?.name || p.color || seed?.type || "Handcrafted Saree / Suit",
         collections: [],
-        material: p.color || "Fine Silk",
-        colour: p.color || "Natural",
-        inStock: p.stock === undefined || p.stock > 0,
-        images: resolvedImages.length > 0 ? resolvedImages : ["/placeholder.svg"],
-        description: p.description || "",
+        material: p.color || apiProd?.color || seed?.material || "Fine Silk",
+        color: p.color || apiProd?.color || seed?.color || "Natural",
+        colour: p.color || apiProd?.color || seed?.color || "Natural",
+        inStock: p.stock !== undefined ? p.stock > 0 : apiProd?.stock !== undefined ? apiProd.stock > 0 : true,
+        images: finalImages,
+        media: validMedia,
+        description: p.description || apiProd?.description || seed?.description || "",
         craft: "Handwoven in atelier",
         dimensions: "Standard dimensions",
         care: "Dry clean only",
-        variants: (p as any).variants,
-        stock: p.stock,
+        variants: p.variants || apiProd?.variants || (seed as any)?.variants,
+        stock: p.stock ?? apiProd?.stock ?? seed?.stock,
         wishlistItemId: it.id,
       };
     });
-  }, [items]);
+  }, [items, apiProducts]);
 
   return (
     <div>

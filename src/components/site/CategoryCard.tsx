@@ -18,6 +18,7 @@ interface CategoryCardProps {
   variant?: "card" | "badge" | "compact" | "circle";
   className?: string;
   onClick?: () => void;
+  preventNavigation?: boolean;
 }
 
 // Curated fabric & attire images without human models
@@ -53,11 +54,19 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
   variant = "circle",
   className,
   onClick,
+  preventNavigation = false,
 }) => {
   // If category has a custom uploaded imageUrl use that, otherwise use curated non-model image
   const fallbackImg = getCategoryNonModelImage(category.name, category.id);
   const resolvedImageUrl = getMediaUrl(category.imageUrl) || fallbackImg;
   const productCount = category._count?.products;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (preventNavigation) {
+      e.preventDefault();
+    }
+    onClick?.();
+  };
 
   // 1. Circular Ring Variant (Small size, circular ring, image without model)
   if (variant === "circle") {
@@ -65,7 +74,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       <Link
         to="/category/$id"
         params={{ id: category.id }}
-        onClick={onClick}
+        onClick={handleClick}
         aria-label={`Category ${category.name}`}
         className={cn(
           "group flex flex-col items-center text-center shrink-0 transition-transform duration-300 hover:-translate-y-1 focus:outline-none",
@@ -125,7 +134,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       <Link
         to="/category/$id"
         params={{ id: category.id }}
-        onClick={onClick}
+        onClick={handleClick}
         className={cn(
           "group inline-flex items-center gap-2.5 rounded-full px-5 py-2.5 text-xs font-medium uppercase tracking-[0.14em] transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1D2F]",
           isActive
@@ -157,7 +166,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
       <Link
         to="/category/$id"
         params={{ id: category.id }}
-        onClick={onClick}
+        onClick={handleClick}
         className={cn(
           "group flex items-center gap-3.5 p-2 rounded-sm transition-all duration-200 hover:bg-[#FAF8F5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#6B1D2F]",
           isActive && "bg-[#FAF8F5] font-semibold",

@@ -4,6 +4,8 @@ import { usePublicBlogs, usePublicCategories } from "@/hooks/use-blogs";
 import { getMediaUrl } from "@/lib/media";
 import brandStory from "@/assets/brand-story.jpg";
 import { Reveal } from "@/components/site/Reveal";
+import { BlogDetailsModal } from "@/components/blog/BlogDetailsModal";
+import { Blog } from "@/types/blog";
 import {
   BookOpen,
   Calendar,
@@ -15,6 +17,8 @@ import {
   ChevronRight,
   Tag,
   Loader2,
+  Eye,
+  ExternalLink,
 } from "lucide-react";
 
 export const Route = createFileRoute("/blogs")({
@@ -45,6 +49,7 @@ function BlogsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [searchInput, setSearchInput] = useState<string>("");
+  const [selectedBlog, setSelectedBlog] = useState<Blog | null>(null);
 
   const { data: categoriesData } = usePublicCategories();
   const categories = categoriesData || [];
@@ -204,18 +209,18 @@ function BlogsPage() {
                   return (
                     <article
                       key={blog.id}
-                      className="group flex flex-col overflow-hidden border border-border/70 bg-white shadow-sm transition-all duration-300 hover:shadow-md"
+                      className="group flex flex-col overflow-hidden border border-border/70 bg-white shadow-xs transition-all duration-300 hover:shadow-md hover:border-[#6B1D2F]/40"
                     >
-                      <Link
-                        to="/journal/$slug"
-                        params={{ slug: blog.slug }}
-                        className="relative aspect-[16/10] overflow-hidden bg-neutral-100 block"
+                      {/* Card Image Area with Quick Read Hover */}
+                      <div
+                        onClick={() => setSelectedBlog(blog)}
+                        className="relative aspect-[16/11] overflow-hidden bg-neutral-100 block cursor-pointer"
                       >
                         <img
                           src={coverSrc}
                           alt={blog.featuredImageAlt || blog.title}
                           loading="lazy"
-                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="h-full w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = DEFAULT_COVER;
                           }}
@@ -225,13 +230,20 @@ function BlogsPage() {
                             {blog.category}
                           </span>
                         )}
-                      </Link>
+                        {/* Hover Quick Read Button */}
+                        <div className="absolute inset-0 bg-[#1C1917]/25 opacity-0 transition-opacity duration-300 flex items-center justify-center group-hover:opacity-100">
+                          <span className="inline-flex items-center gap-1.5 bg-white/95 backdrop-blur-sm px-4 py-2 text-xs font-semibold uppercase tracking-wider text-[#1C1917] rounded-xs shadow-md">
+                            <Eye className="h-3.5 w-3.5 text-[#6B1D2F]" />
+                            <span>Quick Read</span>
+                          </span>
+                        </div>
+                      </div>
 
                       <div className="flex flex-1 flex-col p-6">
                         <div className="flex items-center gap-4 text-xs text-muted-foreground">
                           {displayDate && (
                             <span className="flex items-center gap-1.5">
-                              <Calendar className="h-3.5 w-3.5" />
+                              <Calendar className="h-3.5 w-3.5 text-[#6B1D2F]" />
                               {new Date(displayDate).toLocaleDateString("en-IN", {
                                 month: "short",
                                 day: "numeric",
@@ -240,15 +252,16 @@ function BlogsPage() {
                             </span>
                           )}
                           <span className="flex items-center gap-1.5">
-                            <User className="h-3.5 w-3.5" />
+                            <User className="h-3.5 w-3.5 text-[#6B1D2F]" />
                             {blog.author || "LaMoksh Atelier"}
                           </span>
                         </div>
 
-                        <h2 className="mt-3 font-serif text-xl font-normal leading-snug text-foreground transition-colors group-hover:text-[#6B1D2F]">
-                          <Link to="/journal/$slug" params={{ slug: blog.slug }}>
-                            {blog.title}
-                          </Link>
+                        <h2
+                          onClick={() => setSelectedBlog(blog)}
+                          className="mt-3 font-serif text-xl font-normal leading-snug text-foreground transition-colors group-hover:text-[#6B1D2F] cursor-pointer"
+                        >
+                          {blog.title}
                         </h2>
 
                         <p className="body-lux mt-3 flex-1 line-clamp-3 text-sm text-muted-foreground">
@@ -262,21 +275,30 @@ function BlogsPage() {
                                 key={tag}
                                 className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/80 bg-neutral-100 px-2 py-0.5"
                               >
-                                <Tag className="h-2.5 w-2.5" />
+                                <Tag className="h-2.5 w-2.5 text-[#6B1D2F]" />
                                 {tag}
                               </span>
                             ))}
                           </div>
                         )}
 
-                        <div className="mt-6 pt-4 border-t border-border/60">
+                        <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedBlog(blog)}
+                            className="inline-flex items-center gap-1.5 font-sans text-xs font-semibold uppercase tracking-[0.14em] text-[#6B1D2F] transition-colors hover:text-[#4D1220]"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                            <span>Quick View</span>
+                          </button>
+
                           <Link
                             to="/journal/$slug"
                             params={{ slug: blog.slug }}
-                            className="inline-flex items-center gap-2 font-sans text-xs font-semibold uppercase tracking-[0.16em] text-[#6B1D2F] transition-colors hover:text-[#4D1220]"
+                            className="inline-flex items-center gap-1 text-[11px] font-sans font-medium uppercase tracking-wider text-muted-foreground hover:text-[#1C1917] transition-colors"
                           >
-                            <span>Read Full Story</span>
-                            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+                            <span>Full Page</span>
+                            <ExternalLink className="h-3 w-3" />
                           </Link>
                         </div>
                       </div>
@@ -337,6 +359,13 @@ function BlogsPage() {
           )}
         </div>
       </section>
+
+      {/* Interactive Blog Details Modal */}
+      <BlogDetailsModal
+        isOpen={Boolean(selectedBlog)}
+        blog={selectedBlog}
+        onClose={() => setSelectedBlog(null)}
+      />
     </div>
   );
 }
