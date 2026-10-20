@@ -1,18 +1,25 @@
-import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { PageHeader } from "@/components/site/PageHeader";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Reveal } from "@/components/site/Reveal";
+import { FaqSection } from "@/components/site/FaqSection";
+import { images } from "@/data/catalog";
+import { FAQS } from "@/data/faqs";
+import { Sparkles, Scissors, Truck, Headphones } from "lucide-react";
 
 export const Route = createFileRoute("/faq")({
   head: () => ({
     meta: [
-      { title: "Frequently Asked Questions — LaMoksh Fabrics" },
+      { title: "Frequently Asked Questions (FAQs) — Lamoksh Fabrics" },
       {
         name: "description",
         content:
-          "Answers on made-to-order timelines, sizing, materials, shipping, returns and care at LaMoksh Fabrics.",
+          "Browse FAQs on Lamoksh Fabrics ethnic wear: sarees, unstitched suit materials, Upada silk dupattas, corsets, customisation, sizing, delivery across India, and orders.",
       },
-      { property: "og:title", content: "FAQ — LaMoksh Fabrics" },
-      { property: "og:description", content: "Orders, sizing, shipping, returns and care." },
+      { property: "og:title", content: "Frequently Asked Questions (FAQs) — Lamoksh Fabrics" },
+      {
+        property: "og:description",
+        content:
+          "Find answers regarding ethnic wear collections, customisation, sizing, pan-India delivery, order placement, and returns.",
+      },
       { property: "og:url", content: "/faq" },
     ],
     links: [{ rel: "canonical", href: "/faq" }],
@@ -20,62 +27,114 @@ export const Route = createFileRoute("/faq")({
   component: FaqPage,
 });
 
-const faqs = [
-  {
-    q: "How long does a made-to-order piece take?",
-    a: "Most handcrafted suit sets are finished in two to four weeks. Handwoven clothing can take four to six weeks depending on the loom.",
-  },
-  {
-    q: "Are the fabrics authentic?",
-    a: "Every listing states its materials plainly — pure Banarasi silks, Maheshwari silk-cottons, fine-count cottons, and handblock printed fabrics.",
-  },
-  {
-    q: "Can a piece be customised?",
-    a: "Yes. Kurta length, sleeve length, drape and sizing can usually be adjusted. Write to care@lamoksh.in with the piece you have in mind.",
-  },
-  {
-    q: "Do you ship internationally?",
-    a: "We do, on request, fully insured. Duties and taxes at the destination are the client's responsibility.",
-  },
-  {
-    q: "What is your returns policy?",
-    a: "Unworn pieces may be returned within seven days of delivery. Customised and made-to-measure pieces are final sale.",
-  },
-  {
-    q: "How should I care for my jewellery?",
-    a: "Keep it away from perfume and water, store it in the pouch provided, and send it to us for cleaning or restringing whenever it needs attention.",
-  },
-];
-
 function FaqPage() {
-  const [open, setOpen] = useState<number | null>(0);
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: FAQS.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
 
   return (
-    <div>
-      <PageHeader
-        eyebrow="Client Care"
-        title="Frequently Asked"
-        intro="If your question is not answered here, write to us — we reply personally."
+    <div className="bg-[#FAF9F6]/40 min-h-screen">
+      {/* JSON-LD Structured Data for Search Engine Rich Snippets */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="container-lux max-w-3xl py-16">
-        <dl className="border-t border-border">
-          {faqs.map((f, i) => (
-            <div key={f.q} className="border-b border-border">
-              <dt>
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-between gap-6 py-6 text-left font-display text-lg"
-                  onClick={() => setOpen(open === i ? null : i)}
-                >
-                  {f.q}
-                  <span className="text-muted-foreground">{open === i ? "−" : "+"}</span>
-                </button>
-              </dt>
-              {open === i ? <dd className="body-lux pb-6 text-sm">{f.a}</dd> : null}
+
+      {/* Hero Banner */}
+      <section className="relative flex min-h-[360px] items-center overflow-hidden border-b border-border md:min-h-[420px] lg:h-[46vh] lg:max-h-[500px]">
+        <img
+          src={images.catClothing}
+          alt="Lamoksh Fabrics FAQs — Client Care & Assistance"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-[#4A101E]/80 backdrop-brightness-90" />
+        <div className="container-lux relative z-10 py-16 text-white">
+          <Reveal>
+            <nav className="flex gap-2 text-xs text-white/80">
+              <Link to="/" className="hover:text-white hover:underline">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="font-medium text-white">FAQs</span>
+            </nav>
+            <p className="eyebrow mt-6 text-white/85">Client Care & Concierge</p>
+            <h1 className="display-lg mt-3 text-white">Frequently Asked Questions</h1>
+            <p className="body-lux mt-4 max-w-2xl text-white/90 text-sm sm:text-base leading-relaxed">
+              Explore answers regarding our handcrafted ethnic collections, custom outfits,
+              sizing guidance, nationwide delivery across India, and support services.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Assurance Feature Highlights */}
+      <section className="border-b border-[#E7E5E4] bg-white py-8">
+        <div className="container-lux">
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-4 md:gap-8">
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6B1D2F]/10 text-[#6B1D2F]">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#1C1917]">
+                  Ethnic Wear
+                </p>
+                <p className="text-[11px] text-[#78716C]">Sarees, suits & corsets</p>
+              </div>
             </div>
-          ))}
-        </dl>
-      </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6B1D2F]/10 text-[#6B1D2F]">
+                <Scissors className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#1C1917]">
+                  Custom Outfits
+                </p>
+                <p className="text-[11px] text-[#78716C]">Tailored upon request</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6B1D2F]/10 text-[#6B1D2F]">
+                <Truck className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#1C1917]">
+                  Pan-India Shipping
+                </p>
+                <p className="text-[11px] text-[#78716C]">Secure insured transit</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#6B1D2F]/10 text-[#6B1D2F]">
+                <Headphones className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-[#1C1917]">
+                  Personal Support
+                </p>
+                <p className="text-[11px] text-[#78716C]">Direct team guidance</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Interactive FAQ Section */}
+      <main>
+        <FaqSection showTitle={false} showSupportCards={true} />
+      </main>
     </div>
   );
 }

@@ -137,6 +137,21 @@ function ContactPage() {
                       </a>
                     </div>
                   </div>
+
+                  <div className="rounded-sm border border-[#28201C]/15 bg-[#FAF8F5] p-5">
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#6B1D2F]">
+                      Common Queries?
+                    </p>
+                    <p className="mt-1 text-xs text-[#57534E] leading-relaxed">
+                      Questions regarding customisations, size recommendations, delivery across India, or returns?
+                    </p>
+                    <Link
+                      to="/faq"
+                      className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-[#6B1D2F] hover:underline"
+                    >
+                      Read Frequently Asked Questions &rarr;
+                    </Link>
+                  </div>
                 </dl>
               </Reveal>
             </div>

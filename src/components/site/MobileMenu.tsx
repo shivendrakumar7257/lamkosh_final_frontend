@@ -200,6 +200,17 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                 CONTACT
               </Link>
             </div>
+
+            {/* FAQS */}
+            <div className="py-2">
+              <Link
+                to="/faq"
+                onClick={handleLinkClick}
+                className="block py-2 font-sans text-base font-semibold uppercase tracking-[0.18em] text-[#28201C]"
+              >
+                FAQS
+              </Link>
+            </div>
           </div>
 
           {/* Secondary Navigation */}
