@@ -16,6 +16,10 @@ import {
   Loader2,
   DollarSign,
   AlertCircle,
+  CheckCircle2,
+  CreditCard,
+  Banknote,
+  RotateCcw,
 } from "lucide-react";
 import { adminOrderService } from "@/api/adminOrderService";
 import { Order, OrderStatus, PaymentStatus } from "@/types/order";
@@ -115,6 +119,35 @@ function AdminOrdersPage() {
       );
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to update order status."));
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const handlePaymentStatusChange = async (orderId: string, newPaymentStatus: PaymentStatus) => {
+    setUpdatingId(orderId);
+    try {
+      const updated = await adminOrderService.updateOrderStatus(orderId, {
+        paymentStatus: newPaymentStatus,
+      });
+      toast.success(
+        newPaymentStatus === "PAID"
+          ? "Payment marked as PAID (Payment Received)"
+          : `Payment status updated to ${newPaymentStatus}`,
+      );
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === orderId
+            ? {
+                ...o,
+                paymentStatus: updated?.paymentStatus || newPaymentStatus,
+                status: updated?.status || o.status,
+              }
+            : o,
+        ),
+      );
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to update payment status."));
     } finally {
       setUpdatingId(null);
     }
@@ -240,7 +273,7 @@ function AdminOrdersPage() {
               <th className="p-4">Customer Details</th>
               <th className="p-4">Items</th>
               <th className="p-4">Total Amount</th>
-              <th className="p-4">Payment</th>
+              <th className="p-4">Payment & Settlement</th>
               <th className="p-4">Shipment / AWB</th>
               <th className="p-4">Status & Pipeline</th>
               <th className="p-4 text-right">Actions</th>
@@ -304,19 +337,113 @@ function AdminOrdersPage() {
                       {formatPrice(order.totalAmount)}
                     </td>
 
-                    {/* Payment */}
+                    {/* Payment & Settlement */}
                     <td className="p-4">
-                      <span
-                        className={cn(
-                          "inline-block px-2 py-0.5 text-[10px] uppercase font-semibold border rounded-[2px]",
-                          getPaymentBadge(order.paymentStatus),
-                        )}
-                      >
-                        {order.paymentStatus}
-                      </span>
-                      <span className="block text-[10px] text-[#78716C] mt-0.5">
-                        {order.paymentMethod === "ONLINE" ? "Prepaid" : "COD"}
-                      </span>
+                      <div className="space-y-1.5 min-w-[150px]">
+                        {/* Status Badge & Received Indicator */}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1 px-2 py-0.5 text-[10px] uppercase font-semibold border rounded-[2px]",
+                              getPaymentBadge(order.paymentStatus),
+                            )}
+                          >
+                            {order.paymentStatus === "PAID" ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                                <span>PAID</span>
+                              </>
+                            ) : order.paymentStatus === "PENDING" ? (
+                              <>
+                                <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                                <span>PENDING</span>
+                              </>
+                            ) : order.paymentStatus === "REFUNDED" ? (
+                              <>
+                                <RotateCcw className="w-3 h-3 text-purple-600 shrink-0" />
+                                <span>REFUNDED</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertCircle className="w-3 h-3 text-rose-600 shrink-0" />
+                                <span>FAILED</span>
+                              </>
+                            )}
+                          </span>
+
+                          <span
+                            className={cn(
+                              "text-[10px] font-semibold",
+                              order.paymentStatus === "PAID"
+                                ? "text-emerald-700"
+                                : order.paymentStatus === "REFUNDED"
+                                ? "text-purple-700"
+                                : "text-amber-700",
+                            )}
+                          >
+                            {order.paymentStatus === "PAID"
+                              ? "Received"
+                              : order.paymentStatus === "REFUNDED"
+                              ? "Refunded"
+                              : "Not Received"}
+                          </span>
+                        </div>
+
+                        {/* Payment Method & Transaction Details */}
+                        <div className="text-[11px] text-[#78716C]">
+                          <span className="font-medium text-[#1C1917] inline-flex items-center gap-1">
+                            {order.paymentMethod === "ONLINE" ? (
+                              <>
+                                <CreditCard className="w-3 h-3 text-indigo-700" />
+                                <span>Prepaid (Online)</span>
+                              </>
+                            ) : (
+                              <>
+                                <Banknote className="w-3 h-3 text-emerald-700" />
+                                <span>Cash on Delivery</span>
+                              </>
+                            )}
+                          </span>
+                          {order.razorpayPaymentId && (
+                            <span
+                              className="block font-mono text-[9px] text-[#78716C] truncate max-w-[150px] mt-0.5"
+                              title={`Razorpay Payment ID: ${order.razorpayPaymentId}`}
+                            >
+                              Txn: {order.razorpayPaymentId}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Quick action to Mark as Paid or Revert */}
+                        <div className="pt-0.5">
+                          {order.paymentStatus === "PAID" ? (
+                            <button
+                              type="button"
+                              disabled={isUpdating}
+                              onClick={() => handlePaymentStatusChange(order.id, "PENDING")}
+                              className="text-[10px] text-[#78716C] hover:text-[#1C1917] hover:underline disabled:opacity-50"
+                              title="Revert payment status to Pending"
+                            >
+                              <span>Revert to Pending</span>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              disabled={isUpdating}
+                              onClick={() => handlePaymentStatusChange(order.id, "PAID")}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] font-semibold rounded-[2px] shadow-sm transition-colors disabled:opacity-50"
+                              title="Confirm and mark payment as received (PAID)"
+                            >
+                              {isUpdating ? (
+                                <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="w-2.5 h-2.5" />
+                              )}
+                              <span>Mark as Paid</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </td>
 
                     {/* Shipment / AWB */}

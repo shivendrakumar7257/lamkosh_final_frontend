@@ -161,7 +161,7 @@ export const ProductDescriptionView: React.FC<ProductDescriptionViewProps> = ({
   if (!description || !description.trim()) {
     return (
       <p className="body-lux text-[#78716C] italic text-sm">
-        Handcrafted artisanal creation from the LaMoksh atelier.
+        Handcrafted artisanal creation from LaMoksh.
       </p>
     );
   }
@@ -197,7 +197,7 @@ export const ProductDescriptionView: React.FC<ProductDescriptionViewProps> = ({
         <div className="space-y-2.5 pt-1">
           <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#6B1D2F]">
             <Gem className="h-3 w-3" />
-            <span>Fabric & Atelier Details</span>
+            <span>Fabric &amp; Craft Details</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -283,7 +283,7 @@ export const ProductDescriptionView: React.FC<ProductDescriptionViewProps> = ({
           <Lightbulb className="h-4 w-4 shrink-0 text-amber-800 mt-0.5" />
           <div>
             <span className="font-semibold uppercase tracking-wider text-amber-900 text-[10px] block">
-              Atelier Styling Tip
+              LaMoksh Styling Tip
             </span>
             <span className="text-stone-800 font-sans text-xs leading-relaxed italic">
               "{parsed.styleTip}"

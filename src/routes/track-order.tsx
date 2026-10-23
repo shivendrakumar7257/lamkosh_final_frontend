@@ -22,13 +22,13 @@ export const Route = createFileRoute("/track-order")({
   },
   head: () => ({
     meta: [
-      { title: "Track Your Order — LaMoksh Atelier" },
+      { title: "Track Your Order — LaMoksh" },
       {
         name: "description",
         content:
           "Live Shiprocket courier tracking and delivery milestones for your LaMoksh pieces.",
       },
-      { property: "og:title", content: "Track Your Order — LaMoksh Atelier" },
+      { property: "og:title", content: "Track Your Order — LaMoksh" },
     ],
   }),
   component: TrackOrderPage,
@@ -232,9 +232,17 @@ function TrackOrderPage() {
             <h3 className="font-serif text-lg text-foreground mt-2">No Tracking Record Found</h3>
             <p className="text-muted-foreground mt-1 leading-relaxed">
               We couldn&apos;t find live logistics updates for the provided identifier. Please
-              ensure the reference is correct or contact our atelier team at{" "}
-              <a href="mailto:care@lamoksh.in" className="text-espresso underline">
-                care@lamoksh.in
+              ensure the reference is correct or contact our LaMoksh team at{" "}
+              <a href="mailto:fabricslamoksh@gmail.com" className="text-espresso underline">
+                fabricslamoksh@gmail.com
+              </a>{" "}
+              or call{" "}
+              <a href="tel:+919999875605" className="text-espresso underline">
+                +91 99998 75605
+              </a>
+              {" / "}
+              <a href="tel:+918882510158" className="text-espresso underline">
+                +91 88825 10158
               </a>
               .
             </p>

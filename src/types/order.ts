@@ -22,17 +22,20 @@ export type ShipmentStatus =
 export interface CheckoutPayload {
   name: string; // 2 - 100 characters
   mobileNumber: string; // 10-digit Indian mobile regex: /^[6-9]\d{9}$/
-  email?: string | null; // Optional. If provided for guest, account is auto-created!
+  email?: string | null | undefined; // Optional. If provided for guest, account is auto-created!
   address: string; // 3 - 500 characters
-  fullAddress?: string; // Optional detailed address
-  landmark?: string; // Optional
-  district?: string; // Optional
-  homeTown?: string; // Optional
-  city?: string; // Optional (fallbacks: district or homeTown)
+  fullAddress?: string | undefined; // Optional detailed address
+  landmark?: string | undefined; // Optional
+  district?: string | undefined; // Optional
+  homeTown?: string | undefined; // Optional
+  city?: string | undefined; // Optional (fallbacks: district or homeTown)
   state: string; // Required
   pincode: string; // Exactly 6 digits: /^\d{6}$/
-  paymentMethod?: PaymentMethod; // 'CASH_ON_DELIVERY' (default) or 'ONLINE'
-  guestId?: string | null; // Optional guest ID for guest checkout
+  paymentMethod?: PaymentMethod | undefined; // 'CASH_ON_DELIVERY' (default) or 'ONLINE'
+  guestId?: string | null | undefined; // Optional guest ID for guest checkout
+  razorpayOrderId?: string | null | undefined; // Razorpay order_id if prepaid
+  razorpayPaymentId?: string | null | undefined; // Razorpay payment_id after verification
+  razorpaySignature?: string | null | undefined; // Razorpay signature
 }
 
 // Order Item Snapshot
@@ -122,6 +125,9 @@ export interface Order {
   shippingCharge: number;
   totalAmount: number;
   currency: string;
+  razorpayOrderId?: string | null;
+  razorpayPaymentId?: string | null;
+  razorpaySignature?: string | null;
   createdAt: string;
   updatedAt: string;
 }

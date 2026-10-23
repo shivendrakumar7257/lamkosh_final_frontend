@@ -4,7 +4,7 @@ import { AdminReviewTable } from "@/components/reviews/AdminReviewTable";
 export const Route = createFileRoute("/admin/reviews/")({
   head: () => ({
     meta: [
-      { title: "Review Moderation — Atelier Admin" },
+      { title: "Review Moderation — LaMoksh Admin" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

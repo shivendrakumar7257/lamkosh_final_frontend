@@ -232,7 +232,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({
 
       <div className="absolute inset-x-0 bottom-0 z-10 p-5 sm:p-6 transition-transform duration-300">
         <p className="text-[10px] uppercase tracking-[0.25em] text-white/70">
-          Atelier Collection
+          LaMoksh Collection
         </p>
         <h3 className="mt-1 font-serif text-xl sm:text-2xl font-normal leading-tight text-white drop-shadow-sm transition-colors group-hover:text-amber-100">
           {category.name}

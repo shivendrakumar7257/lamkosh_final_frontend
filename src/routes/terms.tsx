@@ -176,7 +176,7 @@ const SECTIONS: TermSection[] = [
       type: "action",
       text: "Looking for bespoke tailorings or customisation on select pieces?",
       link: {
-        label: "Enquire with Atelier Styling",
+        label: "Enquire with LaMoksh Styling",
         to: "/contact",
       },
     },
@@ -407,7 +407,7 @@ function TermsPage() {
                 {/* Quick Assistance Box */}
                 <div className="rounded-sm border border-[#E7E5E4] bg-[#FAF8F5] p-6 shadow-sm space-y-3">
                   <p className="eyebrow text-[#6B1D2F]">Questions on Terms?</p>
-                  <h4 className="font-display text-lg text-[#1C1917]">Atelier Support</h4>
+                  <h4 className="font-display text-lg text-[#1C1917]">LaMoksh Support</h4>
                   <p className="text-xs text-[#57534E] leading-relaxed">
                     Need clarity on orders, bespoke fitting terms, or payment processing?
                   </p>
@@ -577,7 +577,7 @@ function TermsPage() {
                                 to="/contact"
                                 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#6B1D2F] hover:text-[#4A101E]"
                               >
-                                <span>Contact Atelier Support</span>
+                                <span>Contact LaMoksh Support</span>
                                 <ArrowRight className="h-3.5 w-3.5" />
                               </Link>
                             </div>

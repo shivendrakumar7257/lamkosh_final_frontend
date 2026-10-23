@@ -23,7 +23,7 @@ interface ProductReviewsProps {
 
 export function ProductReviews({
   productId,
-  productName = 'Handcrafted Atelier Piece',
+  productName = 'Handcrafted LaMoksh Piece',
   orderId,
 }: ProductReviewsProps) {
   const [page, setPage] = useState<number>(1);

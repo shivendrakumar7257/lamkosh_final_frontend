@@ -21,7 +21,7 @@ export const Route = createFileRoute("/bestsellers")({
     <CollectionView
       eyebrow="Most Loved"
       title="Most Loved by LaMoksh"
-      description="Quietly, these are the pieces that leave the atelier most often."
+      description="Quietly, these are the pieces that are loved most often."
       image={images.heroCampaign}
       items={productsIn("bestsellers")}
     />

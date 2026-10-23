@@ -50,7 +50,7 @@ export function BlogImageLightbox({
       <div className="relative z-10 max-h-[92vh] max-w-[94vw] flex flex-col items-center justify-center">
         <img
           src={imageUrl}
-          alt={altText || "Atelier image preview"}
+          alt={altText || "LaMoksh image preview"}
           className="max-h-[85vh] max-w-[90vw] object-contain rounded-xs shadow-2xl transition-transform"
         />
         {altText && (

@@ -97,7 +97,7 @@ function SecurityPage() {
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
               <div>
                 <p className="eyebrow text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  LA MOKSH ATELIER ACCOUNT
+                  LAMOKSH ACCOUNT
                 </p>
                 <h1 className="mt-2 font-serif text-3xl font-normal md:text-4xl text-foreground">
                   Security & Access

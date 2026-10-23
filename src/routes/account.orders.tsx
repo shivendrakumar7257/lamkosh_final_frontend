@@ -154,7 +154,7 @@ function AccountOrdersPage() {
       case "PROCESSING":
         return (
           <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-[0.68rem] font-semibold text-amber-900">
-            <Clock className="h-3 w-3" /> At Atelier Bench
+            <Clock className="h-3 w-3" /> In Production at LaMoksh
           </span>
         );
       case "CANCELLED":
@@ -180,10 +180,10 @@ function AccountOrdersPage() {
           {/* Top Title & Navigation Tabs */}
           <div className="border-b border-border/80 pb-6">
             <h1 className="font-serif text-3xl font-light text-foreground sm:text-4xl">
-              Client Atelier Account
+              Client LaMoksh Account
             </h1>
             <p className="mt-2 text-xs text-muted-foreground">
-              Manage your personal atelier wardrobe, ongoing deliveries, and preferences.
+              Manage your personal LaMoksh wardrobe, ongoing deliveries, and preferences.
             </p>
 
             {/* Account Navigation Tabs */}
@@ -451,7 +451,7 @@ function AccountOrdersPage() {
             </AlertDialogTitle>
             <AlertDialogDescription className="text-xs text-muted-foreground leading-relaxed pt-2">
               Are you sure you wish to cancel this order? The reserved inventory will be
-              automatically restored to the atelier stock, and any active Shiprocket shipment will
+              automatically restored to LaMoksh stock, and any active Shiprocket shipment will
               be halted.
             </AlertDialogDescription>
           </AlertDialogHeader>

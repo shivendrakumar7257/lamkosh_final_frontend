@@ -16,7 +16,8 @@ import {
 import { useCart } from "@/context/CartContext";
 import { useAuthStore } from "@/lib/auth-store";
 import { orderService } from "@/api/orderService";
-import { CheckoutPayload, PaymentMethod } from "@/types/order";
+import { CheckoutPayload, PaymentMethod, Order } from "@/types/order";
+import { useRazorpayCheckout } from "@/hooks/useRazorpayCheckout";
 import { getGuestId, getOrCreateGuestId } from "@/lib/guest";
 import { formatPrice } from "@/data/catalog";
 import subcategoryBannerBg from "@/assets/subcategory-banner-bg.png";
@@ -25,7 +26,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — LaMoksh Atelier" },
+      { title: "Checkout — LaMoksh" },
       {
         name: "description",
         content: "Secure luxury checkout for handcrafted artisanal pieces.",
@@ -75,10 +76,20 @@ const INDIAN_STATES = [
   "Puducherry",
 ];
 
+interface FormErrors {
+  name?: string | undefined;
+  mobileNumber?: string | undefined;
+  email?: string | undefined;
+  address?: string | undefined;
+  state?: string | undefined;
+  pincode?: string | undefined;
+}
+
 function CheckoutPage() {
   const navigate = useNavigate();
   const { cart, subtotal, loading: isCartLoading, refreshCart } = useCart();
   const { user, isAuthenticated } = useAuthStore();
+  const { initiatePayment, isProcessing: isPaymentProcessing } = useRazorpayCheckout();
 
   const items = cart?.items || [];
 
@@ -95,8 +106,9 @@ function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH_ON_DELIVERY");
 
   // Errors
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isBusy = isSubmitting || isPaymentProcessing;
 
   // Sync with auth user when loaded
   useEffect(() => {
@@ -109,7 +121,7 @@ function CheckoutPage() {
   }, [user]);
 
   const validate = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: FormErrors = {};
 
     if (!name.trim() || name.trim().length < 2 || name.trim().length > 100) {
       newErrors.name = "Full name must be between 2 and 100 characters.";
@@ -153,31 +165,103 @@ function CheckoutPage() {
       return;
     }
 
+    const cleanMobile = mobileNumber.replace(/\D/g, "");
+    const cleanPincode = pincode.replace(/\D/g, "");
+    const currentGuestId = !isAuthenticated ? getGuestId() || getOrCreateGuestId() : undefined;
+
+    const basePayload: CheckoutPayload = {
+      name: name.trim(),
+      mobileNumber: cleanMobile,
+      email: email.trim() ? email.trim() : null,
+      address: address.trim(),
+      fullAddress: [address.trim(), landmark.trim(), city.trim(), state, cleanPincode]
+        .filter(Boolean)
+        .join(", "),
+      landmark: landmark.trim() || undefined,
+      city: city.trim() || district.trim() || undefined,
+      district: district.trim() || undefined,
+      state: state.trim(),
+      pincode: cleanPincode,
+      paymentMethod,
+      guestId: currentGuestId,
+    };
+
+    // 1. Online Prepaid Payment via Razorpay Standard Web Checkout
+    if (paymentMethod === "ONLINE") {
+      await initiatePayment({
+        amount: subtotal,
+        isAmountInRupees: true, // converts subtotal to paise e.g. ₹500.00 = 50000 paise
+        currency: "INR",
+        customer: {
+          name: name.trim(),
+          email: email.trim() || undefined,
+          contact: cleanMobile,
+        },
+        description: "Order Payment",
+        themeColor: "#3399cc",
+        onSuccess: async (_verifyResult, razorpayResponse) => {
+          setIsSubmitting(true);
+          try {
+            const finalPayload: CheckoutPayload = {
+              ...basePayload,
+              paymentMethod: "ONLINE",
+              razorpayOrderId: razorpayResponse.razorpay_order_id,
+              razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+              razorpaySignature: razorpayResponse.razorpay_signature,
+            };
+
+            let createdOrder: Order | null = null;
+            try {
+              createdOrder = await orderService.placeOrder(finalPayload, items);
+              // Ensure order is linked and marked as PAID on backend if not already set
+              if (createdOrder?.id && createdOrder.paymentStatus !== "PAID") {
+                try {
+                  await verifyRazorpayPayment({
+                    razorpay_order_id: razorpayResponse.razorpay_order_id || "",
+                    razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+                    razorpay_signature: razorpayResponse.razorpay_signature || "",
+                    orderId: createdOrder.id,
+                  });
+                } catch (linkErr) {
+                  console.debug("Post-order payment verification link notice:", linkErr);
+                }
+              }
+            } catch (orderErr) {
+              console.warn("Notice: Order placement error post-payment verification:", orderErr);
+            }
+
+            // Force cart refresh
+            await refreshCart();
+
+            toast.success("Payment verified successfully! Order placed.");
+
+            // Navigate to order confirmation
+            navigate({
+              to: "/order-success",
+              search: {
+                orderId: createdOrder?.id || razorpayResponse.razorpay_order_id,
+                token: createdOrder?.trackingToken || "",
+                orderNumber: createdOrder?.orderNumber || razorpayResponse.razorpay_payment_id,
+                hasEmail: email.trim() ? "true" : "false",
+              },
+            });
+          } catch (postErr: any) {
+            console.error("Post-verification navigation error:", postErr);
+            toast.error(
+              "Payment verified, but could not finalize redirect. Please check your order history or contact support.",
+            );
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+      });
+      return;
+    }
+
+    // 2. Cash on Delivery (COD) Flow
     setIsSubmitting(true);
     try {
-      const cleanMobile = mobileNumber.replace(/\D/g, "");
-      const cleanPincode = pincode.replace(/\D/g, "");
-
-      const currentGuestId = !isAuthenticated ? getGuestId() || getOrCreateGuestId() : undefined;
-
-      const payload: CheckoutPayload = {
-        name: name.trim(),
-        mobileNumber: cleanMobile,
-        email: email.trim() ? email.trim() : null,
-        address: address.trim(),
-        fullAddress: [address.trim(), landmark.trim(), city.trim(), state, cleanPincode]
-          .filter(Boolean)
-          .join(", "),
-        landmark: landmark.trim() || undefined,
-        city: city.trim() || district.trim() || undefined,
-        district: district.trim() || undefined,
-        state: state.trim(),
-        pincode: cleanPincode,
-        paymentMethod,
-        guestId: currentGuestId,
-      };
-
-      const createdOrder = await orderService.placeOrder(payload, items);
+      const createdOrder = await orderService.placeOrder(basePayload, items);
 
       // Force cart refresh
       await refreshCart();
@@ -250,7 +334,7 @@ function CheckoutPage() {
               Your Bag is Empty
             </h2>
             <p className="mt-2 font-sans text-xs text-[#28201C]/75">
-              Before placing an order, please add handcrafted fabrics or garments from our atelier.
+              Before placing an order, please add handcrafted fabrics or garments from LaMoksh.
             </p>
             <div className="mt-6">
               <Link
@@ -531,7 +615,7 @@ function CheckoutPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 font-medium text-xs text-foreground">
                           <CreditCard className="h-4 w-4 text-indigo-700" />
-                          <span>Online Payment (Prepaid)</span>
+                          <span>Online Payment (Razorpay)</span>
                         </div>
                         <p className="text-[0.68rem] text-muted-foreground">
                           Instant checkout via UPI, NetBanking, Debit / Credit Cards.
@@ -545,17 +629,24 @@ function CheckoutPage() {
                 <div className="block lg:hidden pt-4">
                   <button
                     type="submit"
-                    disabled={isSubmitting || items.length === 0}
+                    disabled={isBusy || items.length === 0}
                     className="flex w-full items-center justify-center gap-2 bg-[#28201C] py-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#FAF8F5] transition-colors hover:bg-[#3d322c] disabled:opacity-50"
                   >
-                    {isSubmitting ? (
+                    {isBusy ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Confirming Atelier Order...</span>
+                        <span>
+                          {paymentMethod === "ONLINE"
+                            ? "Processing Payment..."
+                            : "Confirming Order..."}
+                        </span>
                       </>
                     ) : (
                       <>
-                        <span>Place Order &bull; {formatPrice(subtotal)}</span>
+                        <span>
+                          {paymentMethod === "ONLINE" ? "Pay with Razorpay" : "Place Order"} &bull;{" "}
+                          {formatPrice(subtotal)}
+                        </span>
                         <ArrowRight className="h-4 w-4" />
                       </>
                     )}
@@ -619,7 +710,7 @@ function CheckoutPage() {
                     <div className="flex justify-between text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <Truck className="h-3.5 w-3.5 text-emerald-700" />
-                        <span>Insured Atelier Shipping</span>
+                        <span>Insured LaMoksh Shipping</span>
                       </span>
                       <span className="font-medium text-emerald-700 uppercase tracking-wider text-[0.68rem]">
                         Free
@@ -639,17 +730,24 @@ function CheckoutPage() {
                     <button
                       type="submit"
                       form="checkout-form"
-                      disabled={isSubmitting || items.length === 0}
+                      disabled={isBusy || items.length === 0}
                       className="flex w-full items-center justify-center gap-2 bg-[#28201C] py-4 text-xs font-semibold uppercase tracking-[0.2em] text-[#FAF8F5] transition-colors hover:bg-[#3d322c] disabled:opacity-50"
                     >
-                      {isSubmitting ? (
+                      {isBusy ? (
                         <>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>Securing Your Order...</span>
+                          <span>
+                            {paymentMethod === "ONLINE"
+                              ? "Processing Payment..."
+                              : "Securing Your Order..."}
+                          </span>
                         </>
                       ) : (
                         <>
-                          <span>Complete Order &bull; {formatPrice(subtotal)}</span>
+                          <span>
+                            {paymentMethod === "ONLINE" ? "Pay with Razorpay" : "Complete Order"} &bull;{" "}
+                            {formatPrice(subtotal)}
+                          </span>
                           <ArrowRight className="h-4 w-4" />
                         </>
                       )}

@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Facebook, Instagram } from "lucide-react";
-import reel1Video from "@/assets/✨ Elegance, Reimagined in Fusion ✨Presenting this exquisite ensemble, beautifully crafted in LaM.mp4";
-import reel2Video from "@/assets/Ladies, yeh mauka mat khona! 😍Saree khareedo & Suit FREE paao! ✔Aur bhi BOHOT saare exclusive o.mp4";
-import reel3Video from "@/assets/New Arrival Alert Exhibition is live!Bringing elegance straight to your wardrobe Presenting our.mp4";
+import { Facebook, Instagram, Volume2, VolumeX } from "lucide-react";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { CategoryShowcase } from "@/components/site/CategoryShowcase";
 import { CategoryFilterBar } from "@/components/site/CategoryFilterBar";
+import { VideoTestimonialsSection } from "@/components/site/VideoTestimonialsSection";
 import { useCategories } from "@/hooks/useCategories";
 import { usePublicProducts } from "@/hooks/use-products";
 import { images, products } from "@/data/catalog";
@@ -23,79 +21,115 @@ interface ReelItem {
 
 const INSTAGRAM_REELS: ReelItem[] = [
   {
-    id: "DcmDmx6Plbz",
-    url: "https://www.instagram.com/reels/DcmDmx6Plbz/",
-    title: "Elegance, Reimagined in Fusion — Handcrafted Atelier Collection",
+    id: "testimonial-lamkosh-1",
+    url: "https://www.instagram.com/lamokshfabrics",
+    title: "Sneha Mathur — Custom Festive Celebration Edit",
     poster: images.catNew,
-    videoSrc: reel1Video,
+    videoSrc: "/testimonials/lamkosh_1.mp4",
   },
   {
-    id: "DRjYjEeD8hL",
-    url: "https://www.instagram.com/reels/DRjYjEeD8hL/",
-    title: "Exclusive Saree & Suit Edits — Atelier Festive Collection",
+    id: "testimonial-lamkosh-2",
+    url: "https://www.instagram.com/lamokshfabrics",
+    title: "Kavita Iyer — Grand Temple Zari Kanjeevaram & Silk",
     poster: images.heroCampaign,
-    videoSrc: reel2Video,
+    videoSrc: "/testimonials/lamkosh_2.mp4",
   },
   {
-    id: "DOi3VXvDIRP",
-    url: "https://www.instagram.com/reels/DOi3VXvDIRP/",
-    title: "New Arrival Alert Exhibition Live — Fine Maheshwari & Chanderi Weaves",
+    id: "testimonial-5",
+    url: "https://www.instagram.com/lamokshfabrics",
+    title: "Tanvi Sethi — Brocade Weave Festive Kurta Set",
     poster: images.catClothing,
-    videoSrc: reel3Video,
+    videoSrc: "/testimonials/testimonials_5.mp4",
   },
 ];
 
 function ReelCard({ reel }: { reel: ReelItem }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(true);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(() => {});
-    }
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.defaultMuted = true;
+    video.muted = true;
+
+    const playVideo = () => {
+      const p = video.play();
+      if (p !== undefined) {
+        p.then(() => setIsPlaying(true)).catch(() => {});
+      }
+    };
+
+    playVideo();
+    video.addEventListener("canplay", playVideo);
+    video.addEventListener("loadeddata", playVideo);
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            if (videoRef.current) {
-              videoRef.current.play().catch(() => {});
-            }
+            playVideo();
           } else {
-            if (videoRef.current) {
-              videoRef.current.pause();
-            }
+            video.pause();
+            setIsPlaying(false);
           }
         });
       },
-      { threshold: 0.2 },
+      { threshold: 0.15 },
     );
 
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
 
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      video.removeEventListener("canplay", playVideo);
+      video.removeEventListener("loadeddata", playVideo);
+      observer.disconnect();
+    };
+  }, [reel.videoSrc]);
+
+  const toggleAudio = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      const nextMuted = !videoRef.current.muted;
+      videoRef.current.muted = nextMuted;
+      setIsMuted(nextMuted);
+    }
+  };
+
+  const togglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play().then(() => setIsPlaying(true)).catch(() => {});
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
 
   return (
     <div
       ref={containerRef}
-      className="group relative aspect-[9/16] min-h-[480px] sm:min-h-[520px] md:min-h-[560px] max-h-[620px] w-[82vw] shrink-0 snap-center overflow-hidden rounded-sm border border-[#E7E5E4] bg-[#1C1917] shadow-sm transition-all duration-300 hover:shadow-md sm:w-[320px] md:w-full md:shrink"
+      onClick={togglePlay}
+      className="group relative aspect-[9/16] min-h-[480px] sm:min-h-[520px] md:min-h-[560px] max-h-[620px] w-[82vw] shrink-0 snap-center overflow-hidden rounded-sm border border-[#E7E5E4] bg-[#1C1917] shadow-sm transition-all duration-300 hover:shadow-md sm:w-[320px] md:w-full md:shrink cursor-pointer"
     >
       {/* Autoplay Video Stream */}
       <video
         ref={videoRef}
+        src={reel.videoSrc}
         poster={reel.poster}
         autoPlay
         muted
         loop
         playsInline
+        preload="auto"
         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-      >
-        <source src={reel.videoSrc} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+      />
 
       {/* Luxury Gradient Tint */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent transition-opacity group-hover:from-black/90" />
@@ -105,6 +139,17 @@ function ReelCard({ reel }: { reel: ReelItem }) {
         <Instagram className="h-3 w-3" />
         <span>REEL</span>
       </div>
+
+      {/* Sound Toggle */}
+      <button
+        type="button"
+        onClick={toggleAudio}
+        aria-label={isMuted ? "Unmute reel audio" : "Mute reel audio"}
+        className="absolute top-4 right-4 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md transition-colors hover:bg-black/90 cursor-pointer"
+        title={isMuted ? "Unmute sound" : "Mute sound"}
+      >
+        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4 text-emerald-400" />}
+      </button>
 
       {/* Meta Content at bottom */}
       <div className="absolute inset-x-0 bottom-0 z-10 p-5 text-white">
@@ -117,6 +162,7 @@ function ReelCard({ reel }: { reel: ReelItem }) {
             href={reel.url}
             target="_blank"
             rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="flex items-center gap-1 text-white underline-offset-4 hover:underline"
           >
             <span>VIEW ON INSTAGRAM &rarr;</span>
@@ -139,7 +185,7 @@ function InstagramReelsSection() {
               Step into our world
             </h2>
             <p className="mt-4 font-sans text-sm leading-relaxed text-[#57534E]">
-              Discover our latest stories, craftsmanship and moments from the atelier.
+              Discover our latest stories, craftsmanship and moments from LaMoksh.
             </p>
           </Reveal>
         </div>
@@ -450,14 +496,14 @@ export function ClothingHomePage() {
             <div className="py-20 text-center space-y-3">
               <p className="font-serif text-2xl text-[#1C1917]">No clothing pieces found</p>
               <p className="body-lux text-[#78716C] max-w-md mx-auto">
-                No pieces currently match these filters. New handcrafted creations are continuously arriving from our atelier.
+                No pieces currently match these filters. New handcrafted creations are continuously arriving from LaMoksh.
               </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Atelier Craft Section */}
+      {/* LaMoksh Craft Section */}
       <section className="container-lux mt-16 grid items-center gap-12 lg:grid-cols-2">
         <Reveal className="media-zoom">
           <img
@@ -468,7 +514,7 @@ export function ClothingHomePage() {
           />
         </Reveal>
         <Reveal>
-          <p className="eyebrow">Atelier</p>
+          <p className="eyebrow">LaMoksh</p>
           <h2 className="display-lg mt-4">Woven by hand, thread by thread</h2>
           <p className="body-lux mt-6">
             Every LaMoksh Fabrics garment begins on a master weaver's loom. Zari threads are
@@ -477,6 +523,9 @@ export function ClothingHomePage() {
           </p>
         </Reveal>
       </section>
+
+      {/* Real Customer Video Testimonials Section (3 videos in a row with autoplay) */}
+      <VideoTestimonialsSection />
 
       {/* Instagram Reels Showcase Section */}
       <InstagramReelsSection />

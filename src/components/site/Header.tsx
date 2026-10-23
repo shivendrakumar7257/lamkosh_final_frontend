@@ -75,6 +75,9 @@ export function Header() {
             Wishlist {wishlistCount > 0 ? `(${wishlistCount})` : ""}
           </Link>
           <nav className="hidden items-center gap-7 xl:flex">
+            <a href="/#testimonials" className="nav-label link-underline">
+              Testimonials
+            </a>
             <Link to="/contact" className="nav-label link-underline">
               Contact
             </Link>

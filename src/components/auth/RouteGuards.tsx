@@ -95,7 +95,7 @@ export function AdminRoute({ children }: RouteGuardProps) {
         </p>
         <h1 className="display-sm mt-2 text-2xl font-serif text-foreground">Restricted Access</h1>
         <p className="body-lux mt-3 max-w-md text-sm text-muted-foreground">
-          You do not have administrative privileges to access this sector of the atelier.
+          You do not have administrative privileges to access this sector of LaMoksh.
         </p>
         <div className="mt-8 flex gap-4">
           <Link to="/" className="btn-lux">

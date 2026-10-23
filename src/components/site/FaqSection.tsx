@@ -95,7 +95,7 @@ export function FaqSection({
           <Reveal className="text-center mb-12">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold tracking-[0.2em] uppercase bg-[#6B1D2F]/10 text-[#6B1D2F]">
               <Sparkles className="w-3.5 h-3.5" />
-              Help & Atelier Support
+              Help &amp; LaMoksh Support
             </span>
             <h2 className="display-lg mt-4 text-[#1C1917]">Frequently Asked Questions</h2>
             <p className="body-lux mt-3 max-w-2xl mx-auto text-[#57534E]">
@@ -223,7 +223,7 @@ export function FaqSection({
                   to="/contact"
                   className="px-5 py-2 text-xs uppercase tracking-wider font-semibold bg-[#6B1D2F] text-white hover:bg-[#4A101E] transition-colors"
                 >
-                  Ask Atelier Support
+                  Ask LaMoksh Support
                 </Link>
               </div>
             </div>
@@ -335,7 +335,7 @@ export function FaqSection({
               </h3>
               <p className="body-lux text-sm text-[#57534E] mt-2">
                 Our client care team replies to inquiries with bespoke attention. Reach us by
-                phone, message, or visit our Indirapuram atelier.
+                phone, message, or visit our Indirapuram store.
               </p>
             </div>
 
@@ -347,19 +347,27 @@ export function FaqSection({
                     <Phone className="h-5 w-5" />
                   </div>
                   <h4 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#1C1917]">
-                    Call Atelier
+                    Call LaMoksh
                   </h4>
                   <p className="text-xs text-[#78716C] mt-1.5 leading-relaxed">
                     Direct helpline for orders, sizing and delivery queries.
                   </p>
                 </div>
-                <a
-                  href="tel:+919999875605"
-                  className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#6B1D2F] hover:text-[#4A101E]"
-                >
-                  <span>+91 99998 75605</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#6B1D2F]">
+                  <a
+                    href="tel:+919999875605"
+                    className="hover:text-[#4A101E]"
+                  >
+                    +91 99998 75605
+                  </a>
+                  <span>/</span>
+                  <a
+                    href="tel:+918882510158"
+                    className="hover:text-[#4A101E]"
+                  >
+                    +91 88825 10158
+                  </a>
+                </div>
               </div>
 
               {/* Card 2: Contact Form */}
@@ -391,17 +399,17 @@ export function FaqSection({
                     <MapPin className="h-5 w-5" />
                   </div>
                   <h4 className="font-sans font-semibold text-sm uppercase tracking-wider text-[#1C1917]">
-                    Visit the Atelier
+                    Visit LaMoksh
                   </h4>
                   <p className="text-xs text-[#78716C] mt-1.5 leading-relaxed">
-                    HRC Shopping Complex, Vaibhav Khand, Indirapuram, Ghaziabad.
+                    LG 3, LG 4 &amp; LG 8, HRC Shopping Complex, Vaibhav Khand, Indirapuram, Ghaziabad.
                   </p>
                 </div>
                 <Link
                   to="/contact"
                   className="mt-5 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#6B1D2F] hover:text-[#4A101E]"
                 >
-                  <span>Atelier Details</span>
+                  <span>LaMoksh Details</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>

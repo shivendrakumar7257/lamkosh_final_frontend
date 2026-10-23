@@ -314,7 +314,7 @@ function AdminBlogsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 border border-[#E7E5E4] shadow-sm">
         <div>
           <h1 className="text-2xl font-serif font-light text-[#1C1917]">
-            Journal & Atelier Blog Posts
+            Journal &amp; LaMoksh Blog Posts
           </h1>
           <p className="text-xs text-[#78716C] mt-1 font-sans">
             Manage editorial stories, artisan craftsmanship, and textile guides across draft,
@@ -797,7 +797,7 @@ function AdminBlogsPage() {
 
                     {/* Author & User */}
                     <td className="p-4 whitespace-nowrap">
-                      <div className="font-medium text-[#1C1917]">{post.author || "Atelier"}</div>
+                      <div className="font-medium text-[#1C1917]">{post.author || "LaMoksh"}</div>
                       {post.authorUser && (
                         <div className="text-[10px] text-[#A8A29E] truncate max-w-[120px]">
                           {post.authorUser.name || post.authorUser.email}
@@ -944,7 +944,7 @@ function AdminBlogsPage() {
                     {/* Status & Author */}
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-semibold uppercase tracking-wider text-[#6B1D2F] truncate max-w-[150px]">
-                        {post.author || "Atelier Author"}
+                        {post.author || "LaMoksh"}
                       </span>
                       {renderStatusBadge(post.status)}
                     </div>

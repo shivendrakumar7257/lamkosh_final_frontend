@@ -313,7 +313,7 @@ function AboutPage() {
                     className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-xs font-semibold uppercase tracking-wider text-[#1C1917] hover:border-[#6B1D2F] hover:text-[#6B1D2F] transition-colors"
                   >
                     <PhoneCall className="h-4 w-4" />
-                    <span>+91 99998 75605</span>
+                    <span>+91 99998 75605 / 88825 10158</span>
                   </a>
                 </div>
               </Reveal>
@@ -363,7 +363,7 @@ function AboutPage() {
               </Reveal>
             </div>
 
-            {/* Right Graphic: Atelier Legacy */}
+            {/* Right Graphic: LaMoksh Legacy */}
             <div className="lg:col-span-5">
               <Reveal delay={150}>
                 <div className="overflow-hidden rounded-3xl border border-stone-200/90 bg-white p-3 shadow-md">
@@ -708,7 +708,7 @@ function AboutPage() {
         </div>
       </section>
 
-      {/* ---------------- 7. GHAZIABAD ATELIER & SHOWROOM ---------------- */}
+      {/* ---------------- 7. GHAZIABAD STORE & SHOWROOM ---------------- */}
       <section className="border-t border-stone-200/80 bg-[#FAF8F5]/80 py-16 md:py-24">
         <div className="container-lux">
           <Reveal>
@@ -719,7 +719,7 @@ function AboutPage() {
                   <div className="flex items-center gap-2 text-[#6B1D2F]">
                     <MapPin className="h-5 w-5" />
                     <span className="text-xs font-bold uppercase tracking-widest text-[#6B1D2F]">
-                      Atelier &amp; Physical Store
+                      LaMoksh Store &amp; Showroom
                     </span>
                   </div>
 
@@ -801,7 +801,7 @@ function AboutPage() {
                 className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-8 py-3.5 text-xs font-semibold uppercase tracking-widest text-foreground shadow-2xs transition-all hover:border-[#6B1D2F] hover:text-[#6B1D2F]"
               >
                 <PhoneCall className="h-4 w-4" />
-                <span>Contact Atelier</span>
+                <span>Contact LaMoksh</span>
               </Link>
             </div>
           </Reveal>

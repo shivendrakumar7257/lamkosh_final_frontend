@@ -28,12 +28,12 @@ export const Route = createFileRoute("/blogs")({
       {
         name: "description",
         content:
-          "Read stories of royal handlooms, Varanasi weaving traditions, fabric care guides, and artisanal craft directly from the LaMoksh Fabrics atelier.",
+          "Read stories of royal handlooms, Varanasi weaving traditions, fabric care guides, and artisanal craft directly from LaMoksh Fabrics.",
       },
       { property: "og:title", content: "Journal & Blogs — LaMoksh Fabrics" },
       {
         property: "og:description",
-        content: "Discover Indian textile heritage and atelier stories from LaMoksh Fabrics.",
+        content: "Discover Indian textile heritage and stories from LaMoksh Fabrics.",
       },
       { property: "og:url", content: "/blogs" },
     ],
@@ -89,7 +89,7 @@ function BlogsPage() {
       <section className="border-b border-border/80 bg-[#FAF7F2] py-16 md:py-24 text-center">
         <div className="container-lux max-w-3xl">
           <Reveal>
-            <p className="eyebrow text-[#6B1D2F]">The LaMoksh Atelier Journal</p>
+            <p className="eyebrow text-[#6B1D2F]">The LaMoksh Journal</p>
             <h1 className="display-lg mt-3 font-serif text-foreground">Stories & Weaving Notes</h1>
             <p className="body-lux mt-4 text-muted-foreground text-sm md:text-base">
               A curated archive exploring India&apos;s rich textile heritage, pit loom weaving
@@ -163,7 +163,7 @@ function BlogsPage() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
               <Loader2 className="h-8 w-8 animate-spin text-[#6B1D2F]" />
-              <p className="mt-4 font-serif text-sm">Loading atelier stories...</p>
+              <p className="mt-4 font-serif text-sm">Loading stories...</p>
             </div>
           ) : isError ? (
             <div className="text-center py-20 text-muted-foreground">
@@ -184,7 +184,7 @@ function BlogsPage() {
               <p className="mt-4 font-serif text-lg">
                 {searchQuery || selectedCategory
                   ? "No stories found matching your filter."
-                  : "New atelier articles coming soon."}
+                  : "New articles coming soon."}
               </p>
               {(searchQuery || selectedCategory) && (
                 <button
@@ -253,7 +253,7 @@ function BlogsPage() {
                           )}
                           <span className="flex items-center gap-1.5">
                             <User className="h-3.5 w-3.5 text-[#6B1D2F]" />
-                            {blog.author || "LaMoksh Atelier"}
+                            {blog.author || "LaMoksh"}
                           </span>
                         </div>
 

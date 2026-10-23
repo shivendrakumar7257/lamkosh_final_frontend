@@ -60,7 +60,7 @@ function JournalArticlePage() {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-background text-foreground">
         <Loader2 className="h-8 w-8 animate-spin text-[#6B1D2F]" />
-        <p className="mt-4 font-serif text-sm text-muted-foreground">Opening atelier article...</p>
+        <p className="mt-4 font-serif text-sm text-muted-foreground">Opening article...</p>
       </div>
     );
   }
@@ -71,7 +71,7 @@ function JournalArticlePage() {
         <BookOpen className="h-12 w-12 text-[#6B1D2F]/70 mb-4 stroke-[1.2]" />
         <h1 className="font-serif text-2xl md:text-3xl text-foreground">Article Not Found</h1>
         <p className="mt-3 text-sm text-muted-foreground max-w-md">
-          The atelier article you requested could not be located. It may have been archived or
+          The article you requested could not be located. It may have been archived or
           moved.
         </p>
         <Link
@@ -136,7 +136,7 @@ function JournalArticlePage() {
               <span className="flex items-center gap-2">
                 <User className="h-4 w-4 text-[#6B1D2F]" />
                 <span className="font-medium text-foreground">
-                  {blog.author || "LaMoksh Atelier"}
+                  {blog.author || "LaMoksh"}
                 </span>
               </span>
               {displayDate && (
@@ -208,7 +208,7 @@ function JournalArticlePage() {
             <div className="flex items-center gap-2 mb-6">
               <Sparkles className="h-4 w-4 text-[#6B1D2F]" />
               <h2 className="font-serif text-xl font-normal text-foreground">
-                Atelier Visual Archive
+                LaMoksh Visual Archive
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -220,7 +220,7 @@ function JournalArticlePage() {
                 >
                   <img
                     src={getMediaUrl(img.url)}
-                    alt={img.altText || "Atelier gallery image"}
+                    alt={img.altText || "LaMoksh gallery image"}
                     loading="lazy"
                     className="max-h-[320px] w-auto max-w-full object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
                   />
@@ -255,14 +255,14 @@ function JournalArticlePage() {
           </div>
         )}
 
-        {/* Author Atelier Footer Note */}
+        {/* Author LaMoksh Footer Note */}
         <div className="mt-14 border border-border/80 bg-[#FAF7F2] p-6 md:p-8 flex flex-col sm:flex-row items-center gap-6 rounded-xs">
           <div className="h-16 w-16 shrink-0 rounded-full bg-[#6B1D2F] flex items-center justify-center font-serif text-2xl font-bold text-white shadow-xs">
             {(blog.author || "L").charAt(0).toUpperCase()}
           </div>
           <div className="text-center sm:text-left">
             <h3 className="font-serif text-lg text-foreground font-medium">
-              Written by {blog.author || "LaMoksh Fabrics Atelier"}
+              Written by {blog.author || "LaMoksh Fabrics"}
             </h3>
             <p className="mt-1 text-xs text-muted-foreground leading-relaxed">
               Curating stories of authentic Indian textiles, hand-spun fibers, and contemporary

@@ -101,7 +101,7 @@ function AdminSettingsPage() {
 
             <div className="space-y-1 md:col-span-2">
               <label className="block font-semibold uppercase tracking-wider text-[#1C1917]">
-                Business Atelier Address
+                Business Address
               </label>
               <input
                 type="text"

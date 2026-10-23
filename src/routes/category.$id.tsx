@@ -78,7 +78,7 @@ function CategoryDetailPage() {
               <Reveal>
                 <div className="flex items-center gap-2 text-[#6B1D2F]">
                   <Layers className="h-4 w-4" />
-                  <span className="eyebrow tracking-[0.25em]">ATELIER ARCHIVE</span>
+                  <span className="eyebrow tracking-[0.25em]">LAMOKSH ARCHIVE</span>
                 </div>
                 <h1 className="display-xl mt-3 text-[#1C1917]">
                   {isLoading ? (

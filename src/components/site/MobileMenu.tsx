@@ -190,6 +190,17 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               </Link>
             </div>
 
+            {/* TESTIMONIALS */}
+            <div className="py-2">
+              <a
+                href="/#testimonials"
+                onClick={handleLinkClick}
+                className="block py-2 font-sans text-base font-semibold uppercase tracking-[0.18em] text-[#28201C]"
+              >
+                TESTIMONIALS
+              </a>
+            </div>
+
             {/* CONTACT */}
             <div className="py-2">
               <Link

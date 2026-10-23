@@ -116,7 +116,7 @@ function AdminLayoutComponent() {
                 LAMOKSH
               </span>
               <span className="block font-sans text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-[#57534E]">
-                ATELIER ADMIN
+                LAMOKSH ADMIN
               </span>
             </div>
           </Link>

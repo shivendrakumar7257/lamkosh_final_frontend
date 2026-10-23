@@ -19,7 +19,7 @@ export const Route = createFileRoute("/signup")({
       {
         name: "description",
         content:
-          "Create your personal account with LaMoksh for bespoke collections and private atelier services.",
+          "Create your personal account with LaMoksh for bespoke collections and private services.",
       },
     ],
   }),
@@ -109,7 +109,7 @@ function SignupPage() {
         <Reveal>
           <div className="text-center">
             <p className="eyebrow text-xs uppercase tracking-[0.2em] text-ivory/70">
-              JOIN THE ATELIER
+              JOIN LAMOKSH
             </p>
             <h1 className="mt-2 font-serif text-3xl font-normal text-ivory md:text-4xl">
               Create an Account

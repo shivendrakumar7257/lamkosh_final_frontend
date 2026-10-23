@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   Mail,
   Phone,
+  Clock,
   ArrowRight,
   ShieldCheck,
   Camera,
@@ -363,7 +364,7 @@ function ReturnPolicyPage() {
                 {/* Return Request Quick Action Card */}
                 <div className="rounded-sm border border-[#E7E5E4] bg-[#FAF8F5] p-6 shadow-sm space-y-3">
                   <p className="eyebrow text-[#6B1D2F]">Need to Request a Return?</p>
-                  <h4 className="font-display text-lg text-[#1C1917]">Contact Our Atelier</h4>
+                  <h4 className="font-display text-lg text-[#1C1917]">Contact LaMoksh</h4>
                   <p className="text-xs text-[#57534E] leading-relaxed">
                     Have your order ID and pictures ready. Our team will review your request and
                     provide instructions.
@@ -389,7 +390,7 @@ function ReturnPolicyPage() {
                       className="flex items-center gap-2 text-[#1C1917] hover:text-[#6B1D2F]"
                     >
                       <Phone className="h-3.5 w-3.5 text-[#6B1D2F]" />
-                      <span className="font-semibold">+91 99998 75605</span>
+                      <span className="font-semibold">+91 99998 75605 / 88825 10158</span>
                     </a>
                     <a
                       href="mailto:fabricslamoksh@gmail.com"
@@ -398,6 +399,10 @@ function ReturnPolicyPage() {
                       <Mail className="h-3.5 w-3.5 text-[#6B1D2F]" />
                       <span>fabricslamoksh@gmail.com</span>
                     </a>
+                    <div className="flex items-center gap-2 text-stone-600 pt-0.5">
+                      <Clock className="h-3.5 w-3.5 text-[#6B1D2F]" />
+                      <span>Wed–Mon: 8:00 AM – 10:00 PM</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -522,7 +527,29 @@ function ReturnPolicyPage() {
                                   className="text-[#6B1D2F] hover:underline"
                                 >
                                   +91 99998 75605
+                                </a>{" "}
+                                /{" "}
+                                <a
+                                  href="tel:+918882510158"
+                                  className="text-[#6B1D2F] hover:underline"
+                                >
+                                  +91 88825 10158
                                 </a>
+                              </div>
+                              <div>
+                                <span className="font-semibold">Working Days: </span>
+                                <span>Wednesday to Monday</span>
+                              </div>
+                              <div>
+                                <span className="font-semibold">Working Hours: </span>
+                                <span>8:00 AM to 10:00 PM</span>
+                              </div>
+                              <div>
+                                <span className="font-semibold">Location: </span>
+                                <span>
+                                  LG 3, LG 4 &amp; LG 8, HRC Shopping Complex, Vaibhav Khand,
+                                  Indirapuram, Ghaziabad, Uttar Pradesh 201014
+                                </span>
                               </div>
                             </div>
                             <div className="pt-3">
@@ -530,7 +557,7 @@ function ReturnPolicyPage() {
                                 to="/contact"
                                 className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#6B1D2F] hover:text-[#4A101E]"
                               >
-                                <span>Contact Atelier Support</span>
+                                <span>Contact LaMoksh Support</span>
                                 <ArrowRight className="h-3.5 w-3.5" />
                               </Link>
                             </div>
@@ -548,7 +575,7 @@ function ReturnPolicyPage() {
                   <h3 className="font-display text-2xl text-white">We are here to help</h3>
                   <p className="body-lux text-sm text-white/85 mt-2 max-w-xl">
                     We appreciate your understanding and the opportunity to resolve any concerns you
-                    may have with your purchase. Speak directly with our atelier team.
+                    may have with your purchase. Speak directly with our LaMoksh team.
                   </p>
                 </div>
                 <div className="mt-6 sm:mt-0 shrink-0 flex flex-wrap gap-3 justify-center">

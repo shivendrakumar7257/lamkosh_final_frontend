@@ -21,6 +21,9 @@ import {
   Sliders,
   CheckCircle2,
   Info,
+  AlertCircle,
+  Banknote,
+  RotateCcw,
 } from "lucide-react";
 import { adminOrderService } from "@/api/adminOrderService";
 import {
@@ -148,14 +151,42 @@ function AdminOrderDetailPage() {
     if (!order) return;
     setActionLoading(true);
     try {
-      const updated = await adminOrderService.updateOrderStatus(order.id, {
-        status,
+      const payload: { status?: OrderStatus; paymentStatus?: PaymentStatus } = {
         paymentStatus,
-      });
+      };
+      if (status !== order.status) {
+        payload.status = status;
+      }
+      const updated = await adminOrderService.updateOrderStatus(order.id, payload);
       setOrder(updated);
-      toast.success("Order status updated successfully!");
+      setStatus(updated.status);
+      setPaymentStatus(updated.paymentStatus);
+      toast.success("Order state updated successfully!");
     } catch (err: unknown) {
       toast.error(getErrorMessage(err, "Failed to update order status."));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Quick Payment status updater (e.g. Mark Paid / Received with single click)
+  const handleQuickPaymentUpdate = async (newPaymentStatus: PaymentStatus) => {
+    if (!order) return;
+    setActionLoading(true);
+    try {
+      const updated = await adminOrderService.updateOrderStatus(order.id, {
+        paymentStatus: newPaymentStatus,
+      });
+      setOrder(updated);
+      setPaymentStatus(updated.paymentStatus);
+      setStatus(updated.status);
+      toast.success(
+        newPaymentStatus === "PAID"
+          ? "Payment marked as PAID (Payment Received)!"
+          : `Payment status updated to ${newPaymentStatus}!`,
+      );
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to update payment status."));
     } finally {
       setActionLoading(false);
     }
@@ -381,8 +412,31 @@ function AdminOrderDetailPage() {
               >
                 {order.status}
               </span>
-              <span className="text-xs uppercase px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 font-sans font-semibold">
-                {order.paymentStatus}
+              <span
+                className={cn(
+                  "text-xs uppercase px-2.5 py-0.5 border font-sans font-semibold rounded-[2px] inline-flex items-center gap-1.5",
+                  order.paymentStatus === "PAID"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                    : order.paymentStatus === "PENDING"
+                    ? "bg-amber-50 text-amber-900 border-amber-300"
+                    : order.paymentStatus === "REFUNDED"
+                    ? "bg-purple-50 text-purple-800 border-purple-300"
+                    : "bg-rose-50 text-rose-800 border-rose-300",
+                )}
+              >
+                {order.paymentStatus === "PAID" ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Payment Received (PAID)</span>
+                  </>
+                ) : order.paymentStatus === "PENDING" ? (
+                  <>
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Payment Pending</span>
+                  </>
+                ) : (
+                  <span>Payment: {order.paymentStatus}</span>
+                )}
               </span>
             </h1>
             <p className="text-xs text-[#78716C] mt-1 font-sans">
@@ -466,7 +520,7 @@ function AdminOrderDetailPage() {
           <div>
             <strong className="font-semibold">Order Declined & Cancelled.</strong>
             <p className="text-rose-800/80 mt-0.5">
-              All reserved product quantities were restored to atelier inventory.
+              All reserved product quantities were restored to LaMoksh inventory.
             </p>
           </div>
         </div>
@@ -529,7 +583,7 @@ function AdminOrderDetailPage() {
           <div className="bg-white border border-[#E7E5E4] p-6 shadow-sm space-y-3 text-xs">
             <h2 className="text-lg font-serif text-[#1C1917] pb-3 border-b border-[#E7E5E4] flex items-center space-x-2">
               <FileText className="w-5 h-5 text-[#6B1D2F]" />
-              <span>Payment & Financial Summary</span>
+              <span>Financial Summary</span>
             </h2>
 
             <div className="flex justify-between py-1 text-[#57534E]">
@@ -549,6 +603,200 @@ function AdminOrderDetailPage() {
               <span className="text-lg font-serif text-[#6B1D2F] font-mono">
                 {formatPrice(order.totalAmount)}
               </span>
+            </div>
+          </div>
+
+          {/* Payment & Settlement Status Card */}
+          <div className="bg-white border border-[#E7E5E4] p-6 shadow-sm space-y-4 text-xs">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E7E5E4]">
+              <h2 className="text-lg font-serif text-[#1C1917] flex items-center space-x-2">
+                <CreditCard className="w-5 h-5 text-[#6B1D2F]" />
+                <span>Payment & Settlement Status</span>
+              </h2>
+              <span
+                className={cn(
+                  "px-2.5 py-0.5 text-xs font-semibold uppercase rounded-[2px] border inline-flex items-center gap-1",
+                  order.paymentStatus === "PAID"
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                    : order.paymentStatus === "PENDING"
+                    ? "bg-amber-50 text-amber-900 border-amber-300"
+                    : order.paymentStatus === "REFUNDED"
+                    ? "bg-purple-50 text-purple-800 border-purple-300"
+                    : "bg-rose-50 text-rose-800 border-rose-300",
+                )}
+              >
+                {order.paymentStatus === "PAID" ? (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>PAID</span>
+                  </>
+                ) : order.paymentStatus === "PENDING" ? (
+                  <>
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span>PENDING</span>
+                  </>
+                ) : (
+                  <span>{order.paymentStatus}</span>
+                )}
+              </span>
+            </div>
+
+            {/* Visual Settlement Alert Banner */}
+            {order.paymentStatus === "PAID" ? (
+              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-[2px] flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-semibold text-emerald-950 text-sm">
+                    Payment Received ({formatPrice(order.totalAmount)})
+                  </p>
+                  <p className="text-emerald-800/90 text-xs">
+                    The payment for this order has been verified and settled.
+                    {order.paymentMethod === "ONLINE" && " Captured via Razorpay online payment gateway."}
+                  </p>
+                </div>
+              </div>
+            ) : order.paymentStatus === "PENDING" ? (
+              <div className="bg-amber-50 border border-amber-300 p-4 rounded-[2px] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p className="font-semibold text-amber-950 text-sm">
+                      Payment Not Received / Pending ({formatPrice(order.totalAmount)})
+                    </p>
+                    <p className="text-amber-900/90 text-xs">
+                      {order.paymentMethod === "ONLINE"
+                        ? "This order was placed as Prepaid (Online). If the amount was credited to your Razorpay/bank account, click 'Mark Payment as Received'."
+                        : "Payment is Cash on Delivery (COD). Payment should be collected upon delivery."}
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => handleQuickPaymentUpdate("PAID")}
+                  className="shrink-0 flex items-center gap-1.5 px-4 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs uppercase tracking-wider rounded-[2px] shadow transition-colors disabled:opacity-50"
+                  title="Confirm receipt of payment and mark as PAID"
+                >
+                  {actionLoading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  )}
+                  <span>Mark Payment as Received</span>
+                </button>
+              </div>
+            ) : (
+              <div className="bg-rose-50 border border-rose-200 p-4 rounded-[2px] flex items-center gap-3">
+                <XCircle className="w-5 h-5 text-rose-700 shrink-0" />
+                <div>
+                  <p className="font-semibold text-rose-950 text-sm">Payment Status: {order.paymentStatus}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Key Payment Metrics Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 bg-[#FAF8F5] p-4 border border-[#E7E5E4]">
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-[#78716C] block">
+                  PAYMENT METHOD
+                </span>
+                <span className="font-medium text-[#1C1917] mt-0.5 inline-flex items-center gap-1">
+                  {order.paymentMethod === "ONLINE" ? (
+                    <>
+                      <CreditCard className="w-3.5 h-3.5 text-indigo-700" />
+                      <span>Prepaid (Razorpay)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Banknote className="w-3.5 h-3.5 text-emerald-700" />
+                      <span>Cash on Delivery (COD)</span>
+                    </>
+                  )}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-[#78716C] block">
+                  PAYMENT RECEIVED?
+                </span>
+                <span
+                  className={cn(
+                    "font-bold mt-0.5 block",
+                    order.paymentStatus === "PAID" ? "text-emerald-700" : "text-amber-800",
+                  )}
+                >
+                  {order.paymentStatus === "PAID"
+                    ? "YES — Received & Settled"
+                    : "NO — Pending Confirmation"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[10px] uppercase font-semibold text-[#78716C] block">
+                  SETTLED AMOUNT
+                </span>
+                <span className="font-mono font-bold text-[#1C1917] mt-0.5 block">
+                  {formatPrice(order.totalAmount)}
+                </span>
+              </div>
+
+              {order.razorpayPaymentId && (
+                <div className="sm:col-span-2">
+                  <span className="text-[10px] uppercase font-semibold text-[#78716C] block">
+                    RAZORPAY PAYMENT ID (TRANSACTION)
+                  </span>
+                  <span className="font-mono text-[11px] text-[#1C1917] mt-0.5 block select-all">
+                    {order.razorpayPaymentId}
+                  </span>
+                </div>
+              )}
+
+              {order.razorpayOrderId && (
+                <div>
+                  <span className="text-[10px] uppercase font-semibold text-[#78716C] block">
+                    RAZORPAY ORDER ID
+                  </span>
+                  <span className="font-mono text-[11px] text-[#1C1917] mt-0.5 block select-all">
+                    {order.razorpayOrderId}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Actions Bar */}
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#E7E5E4]">
+              {order.paymentStatus !== "PAID" ? (
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => handleQuickPaymentUpdate("PAID")}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs uppercase tracking-wider rounded-[2px] transition-colors disabled:opacity-50"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Mark as Paid (Payment Received)</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => handleQuickPaymentUpdate("PENDING")}
+                  className="px-3 py-1.5 border border-[#E7E5E4] hover:border-[#1C1917] bg-white text-[#78716C] hover:text-[#1C1917] text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
+                >
+                  <span>Revert to Payment Pending</span>
+                </button>
+              )}
+
+              {order.paymentStatus !== "REFUNDED" && (
+                <button
+                  type="button"
+                  disabled={actionLoading}
+                  onClick={() => handleQuickPaymentUpdate("REFUNDED")}
+                  className="px-3 py-1.5 border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-50"
+                >
+                  <span>Mark as Refunded</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -835,62 +1083,61 @@ function AdminOrderDetailPage() {
           </div>
 
           {/* Status Pipeline & Payment Controls */}
-          {isAccepted && (
-            <div className="bg-white border border-[#E7E5E4] p-6 shadow-sm space-y-4">
-              <h2 className="text-lg font-serif text-[#1C1917] pb-3 border-b border-[#E7E5E4] flex items-center space-x-2">
-                <Sliders className="w-5 h-5 text-[#6B1D2F]" />
-                <span>Pipeline & Payment Controls</span>
-              </h2>
+          <div className="bg-white border border-[#E7E5E4] p-6 shadow-sm space-y-4">
+            <h2 className="text-lg font-serif text-[#1C1917] pb-3 border-b border-[#E7E5E4] flex items-center space-x-2">
+              <Sliders className="w-5 h-5 text-[#6B1D2F]" />
+              <span>Pipeline & Payment Controls</span>
+            </h2>
 
-              <form onSubmit={handleUpdateStatus} className="space-y-4 text-xs">
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#78716C] uppercase mb-1">
-                    Fulfillment Status
-                  </label>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as OrderStatus)}
-                    className="w-full p-2 border border-[#E7E5E4] bg-[#FAF8F5] focus:outline-none focus:border-[#6B1D2F]"
-                  >
-                    <option value="CONFIRMED">CONFIRMED</option>
-                    <option value="PROCESSING">PROCESSING</option>
-                    <option value="SHIPPED">SHIPPED</option>
-                    <option value="DELIVERED">DELIVERED</option>
-                    <option value="CANCELLED">CANCELLED</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-[#78716C] uppercase mb-1">
-                    Payment Status
-                  </label>
-                  <select
-                    value={paymentStatus}
-                    onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
-                    className="w-full p-2 border border-[#E7E5E4] bg-[#FAF8F5] focus:outline-none focus:border-[#6B1D2F]"
-                  >
-                    <option value="PENDING">PENDING</option>
-                    <option value="PAID">PAID</option>
-                    <option value="FAILED">FAILED</option>
-                    <option value="REFUNDED">REFUNDED</option>
-                  </select>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={actionLoading}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1C1917] text-white uppercase text-xs font-semibold tracking-wider hover:bg-[#3d322c] disabled:opacity-50"
+            <form onSubmit={handleUpdateStatus} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-semibold text-[#78716C] uppercase mb-1">
+                  Fulfillment Status
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as OrderStatus)}
+                  className="w-full p-2 border border-[#E7E5E4] bg-[#FAF8F5] focus:outline-none focus:border-[#6B1D2F]"
                 >
-                  {actionLoading ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Save className="w-3.5 h-3.5" />
-                  )}
-                  <span>Update Order State</span>
-                </button>
-              </form>
-            </div>
-          )}
+                  <option value="PENDING">PENDING</option>
+                  <option value="CONFIRMED">CONFIRMED</option>
+                  <option value="PROCESSING">PROCESSING</option>
+                  <option value="SHIPPED">SHIPPED</option>
+                  <option value="DELIVERED">DELIVERED</option>
+                  <option value="CANCELLED">CANCELLED</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-semibold text-[#78716C] uppercase mb-1">
+                  Payment Status
+                </label>
+                <select
+                  value={paymentStatus}
+                  onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}
+                  className="w-full p-2 border border-[#E7E5E4] bg-[#FAF8F5] focus:outline-none focus:border-[#6B1D2F]"
+                >
+                  <option value="PENDING">PENDING (Payment Pending)</option>
+                  <option value="PAID">PAID (Payment Received)</option>
+                  <option value="FAILED">FAILED (Payment Failed)</option>
+                  <option value="REFUNDED">REFUNDED</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={actionLoading}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-[#1C1917] text-white uppercase text-xs font-semibold tracking-wider hover:bg-[#3d322c] disabled:opacity-50"
+              >
+                {actionLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>Update Order State</span>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

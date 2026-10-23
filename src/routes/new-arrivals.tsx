@@ -9,12 +9,12 @@ export const Route = createFileRoute("/new-arrivals")({
       {
         name: "description",
         content:
-          "The latest handcrafted suit sets and handwoven clothing to leave the LaMoksh Fabrics atelier.",
+          "The latest handcrafted suit sets and handwoven clothing to leave LaMoksh Fabrics.",
       },
       { property: "og:title", content: "New Arrivals — LaMoksh Fabrics" },
       {
         property: "og:description",
-        content: "Newly finished pieces, added as they leave the atelier.",
+        content: "Newly finished pieces, added as they are crafted.",
       },
       { property: "og:url", content: "/new-arrivals" },
     ],

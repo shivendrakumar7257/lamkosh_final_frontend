@@ -118,7 +118,7 @@ function AdminEditBlogPage() {
       setCategory(blog.category || "");
       setDescription(blog.description || "");
       setContent(blog.content || "");
-      setAuthor(blog.author || "LaMoksh Atelier");
+      setAuthor(blog.author || "LaMoksh");
       setStatus(blog.status || "DRAFT");
       setExistingFeaturedImage(blog.featuredImage || null);
       setFeaturedImageAlt(blog.featuredImageAlt || "");
@@ -615,7 +615,7 @@ function AdminEditBlogPage() {
                 maxLength={100}
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="e.g., LaMoksh Atelier"
+                placeholder="e.g., LaMoksh"
                 className="w-full px-3 py-2 border border-[#E7E5E4] bg-[#FAF8F5] text-xs focus:outline-none focus:border-[#6B1D2F]"
               />
             </div>
@@ -861,7 +861,7 @@ function AdminEditBlogPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        insertFormatting("<blockquote><p>", "</p></blockquote>", "Atelier Quote")
+                        insertFormatting("<blockquote><p>", "</p></blockquote>", "LaMoksh Quote")
                       }
                       className="p-1.5 text-[#1C1917] hover:bg-white rounded transition-colors"
                       title="Blockquote"

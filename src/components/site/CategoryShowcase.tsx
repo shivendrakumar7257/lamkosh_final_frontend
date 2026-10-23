@@ -41,7 +41,7 @@ export const CategoryShowcase: React.FC<CategoryShowcaseProps> = ({
             <Reveal>
               <div className="flex items-center gap-2 text-[#6B1D2F]">
                 <Layers className="h-4 w-4" />
-                <span className="eyebrow tracking-[0.25em]">CURATED ATELIER EDITS</span>
+                <span className="eyebrow tracking-[0.25em]">CURATED LAMOKSH EDITS</span>
               </div>
               <h2 className="display-md mt-1.5 text-[#1C1917]">Shop by Category</h2>
             </Reveal>

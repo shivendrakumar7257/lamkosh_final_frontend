@@ -132,7 +132,7 @@ function WishlistPage() {
         images: finalImages,
         media: validMedia,
         description: p.description || apiProd?.description || seed?.description || "",
-        craft: "Handwoven in atelier",
+        craft: "Handwoven by LaMoksh",
         dimensions: "Standard dimensions",
         care: "Dry clean only",
         variants: p.variants || apiProd?.variants || (seed as any)?.variants,

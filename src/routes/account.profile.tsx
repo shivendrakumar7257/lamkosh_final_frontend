@@ -17,7 +17,7 @@ export const Route = createFileRoute("/account/profile")({
       { title: "Account Profile — LaMoksh Fabrics" },
       {
         name: "description",
-        content: "Manage your personal profile, addresses, and atelier preferences.",
+        content: "Manage your personal profile, addresses, and LaMoksh preferences.",
       },
     ],
   }),
@@ -123,7 +123,7 @@ function ProfilePage() {
             <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
               <div>
                 <p className="eyebrow text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                  LA MOKSH ATELIER ACCOUNT
+                  LAMOKSH ACCOUNT
                 </p>
                 <h1 className="mt-2 font-serif text-3xl font-normal md:text-4xl text-foreground">
                   Welcome, {user?.name || "Patron"}
@@ -217,8 +217,7 @@ function ProfilePage() {
                   <span>Privacy Guarantee</span>
                 </div>
                 <p className="mt-2 leading-relaxed">
-                  Your identity and measurements remain strictly confidential within the LaMoksh
-                  atelier.
+                  Your identity and measurements remain strictly confidential within LaMoksh.
                 </p>
                 <div className="mt-4">
                   <Link
