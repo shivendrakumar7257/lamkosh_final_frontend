@@ -251,8 +251,8 @@ const initialBlogs: BlogPost[] = [];
 
 const initialSettings: StoreSettings = {
   storeName: "LaMoksh Fabrics",
-  supportEmail: "care@lamoksh.in",
-  supportPhone: "+91 99998 75605",
+  supportEmail: "fabricslamoksh@gmail.com",
+  supportPhone: "+91 99998 75605 / +91 88825 10158",
   businessAddress:
     "LG 3, LG 4 & LG 8, HRC Shopping Complex, Vaibhav Khand, Indirapuram, Ghaziabad, Uttar Pradesh 201014",
   currency: "INR (₹)",
@@ -384,7 +384,7 @@ export class UnifiedDatabaseStore {
       colour: product.colour || "Ivory",
       inStock: product.inStock ?? true,
       images: product.images?.length ? product.images : (seedProducts[0]?.images ? [seedProducts[0].images[0]] : []),
-      description: product.description || "Handcrafted creation from the atelier.",
+      description: product.description || "Handcrafted creation from LaMoksh.",
       craft: product.craft || "Handloom woven.",
       dimensions: product.dimensions || "3-Piece Set",
       care: product.care || "Dry clean recommended.",

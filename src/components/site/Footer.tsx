@@ -22,19 +22,32 @@ export function Footer() {
             An Indian house of handwoven clothing — made in small numbers, by named hands, for the
             occasions you remember.
           </p>
-          <div className="mt-5 space-y-1 text-xs text-white/75">
+          <div className="mt-5 space-y-1.5 text-xs text-white/75">
             <p className="font-semibold uppercase tracking-wider text-white">
-              Atelier & Store Location:
+              LaMoksh Store Location:
             </p>
             <p>
-              LG 3, LG 4 & LG 8, HRC Shopping Complex, Vaibhav Khand, Indirapuram, Ghaziabad, Uttar
+              LG 3, LG 4 &amp; LG 8, HRC Shopping Complex, Vaibhav Khand, Indirapuram, Ghaziabad, Uttar
               Pradesh 201014
             </p>
             <p className="pt-1 font-semibold text-white">
               Contact:{" "}
               <a href="tel:+919999875605" className="hover:underline text-white">
                 +91 99998 75605
+              </a>{" "}
+              /{" "}
+              <a href="tel:+918882510158" className="hover:underline text-white">
+                +91 88825 10158
               </a>
+            </p>
+            <p className="text-white/80">
+              Email:{" "}
+              <a href="mailto:fabricslamoksh@gmail.com" className="hover:underline text-white">
+                fabricslamoksh@gmail.com
+              </a>
+            </p>
+            <p className="text-white/70">
+              Working Hours: Wed to Monday : 8:00 AM – 10:00 PM
             </p>
           </div>
           <div className="mt-6 flex gap-5 text-white/70">
@@ -83,6 +96,7 @@ export function Footer() {
           links={[
             { to: "/contact", label: "Contact Us" },
             { to: "/faq", label: "FAQ" },
+            { to: "/#testimonials", label: "Client Testimonials" },
           ]}
         />
         <FooterCol

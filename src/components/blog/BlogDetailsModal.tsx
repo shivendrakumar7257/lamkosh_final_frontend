@@ -161,7 +161,7 @@ export function BlogDetailsModal({ isOpen, onClose, blog }: BlogDetailsModalProp
             <div className="mt-6 flex flex-wrap items-center gap-4 sm:gap-6 border-y border-[#28201C]/10 py-3 text-xs text-[#78716C]">
               <span className="flex items-center gap-1.5">
                 <User className="h-3.5 w-3.5 text-[#6B1D2F]" />
-                <span className="font-medium text-[#1C1917]">{blog.author || "LaMoksh Atelier"}</span>
+                <span className="font-medium text-[#1C1917]">{blog.author || "LaMoksh"}</span>
               </span>
               {displayDate && (
                 <span className="flex items-center gap-1.5">
@@ -212,7 +212,7 @@ export function BlogDetailsModal({ isOpen, onClose, blog }: BlogDetailsModalProp
               <div className="flex items-center gap-2 mb-4">
                 <Sparkles className="h-4 w-4 text-[#6B1D2F]" />
                 <h3 className="font-serif text-lg font-normal text-[#1C1917]">
-                  Atelier Visual Archive
+                  LaMoksh Visual Archive
                 </h3>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -224,7 +224,7 @@ export function BlogDetailsModal({ isOpen, onClose, blog }: BlogDetailsModalProp
                   >
                     <img
                       src={getMediaUrl(img.url)}
-                      alt={img.altText || "Atelier gallery image"}
+                      alt={img.altText || "LaMoksh gallery image"}
                       loading="lazy"
                       className="max-h-[280px] w-auto max-w-full object-contain mx-auto transition-transform duration-300 group-hover:scale-105"
                     />
@@ -264,7 +264,7 @@ export function BlogDetailsModal({ isOpen, onClose, blog }: BlogDetailsModalProp
             </div>
             <div className="text-center sm:text-left">
               <h4 className="font-serif text-base text-[#1C1917] font-medium">
-                Written by {blog.author || "LaMoksh Fabrics Atelier"}
+                Written by {blog.author || "LaMoksh Fabrics"}
               </h4>
               <p className="mt-1 text-xs text-[#78716C] leading-relaxed">
                 Curating stories of authentic Indian textiles, hand-spun fibers, and contemporary

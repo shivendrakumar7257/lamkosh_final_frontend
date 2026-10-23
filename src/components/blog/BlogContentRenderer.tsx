@@ -163,7 +163,7 @@ function parseContentToBlocks(content: string): ContentBlock[] {
     if (
       trimmed.startsWith("**") &&
       trimmed.endsWith("**") &&
-      (trimmed.includes("LaMoksh") || trimmed.includes("Atelier") || trimmed.includes("—"))
+      (trimmed.includes("LaMoksh") || trimmed.includes("—"))
     ) {
       blocks.push({
         type: "quote-banner",
@@ -284,7 +284,7 @@ export function BlogContentRenderer({
                     <span className="flex h-2 w-2 rounded-full bg-[#6B1D2F]" />
                   )}
                   <span className="text-[11px] font-sans font-semibold uppercase tracking-[0.2em] text-[#6B1D2F]">
-                    Atelier Guide Section
+                    LaMoksh Guide Section
                   </span>
                 </div>
                 <h2 className="font-serif text-2xl md:text-3xl font-normal leading-snug text-[#1C1917]">
@@ -363,7 +363,7 @@ export function BlogContentRenderer({
                 <div className="mt-4 flex items-center justify-center gap-2">
                   <span className="h-px w-10 bg-[#6B1D2F]/30" />
                   <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.25em] text-[#6B1D2F]">
-                    LaMoksh Atelier Guarantee
+                    LaMoksh Guarantee
                   </span>
                   <span className="h-px w-10 bg-[#6B1D2F]/30" />
                 </div>

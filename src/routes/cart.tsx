@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/cart")({
   head: () => ({
     meta: [
-      { title: "Your Atelier Bag — LaMoksh Fabrics" },
+      { title: "Your Bag — LaMoksh Fabrics" },
       {
         name: "description",
         content: "Review your handcrafted artisanal pieces, fabric details, and proceed to secure checkout.",
@@ -105,7 +105,7 @@ function CartPage() {
             <span>/</span>
             <span className="font-medium text-ivory">Your Bag</span>
           </nav>
-          <p className="eyebrow mt-4 uppercase tracking-[0.22em] text-ivory/85">ATELIER CART</p>
+          <p className="eyebrow mt-4 uppercase tracking-[0.22em] text-ivory/85">LAMOKSH CART</p>
           <h1 className="mt-2 font-serif text-3xl font-normal text-ivory sm:text-4xl md:text-5xl">
             Your Bag
           </h1>
@@ -120,7 +120,7 @@ function CartPage() {
         {loading && items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <Loader2 className="h-8 w-8 animate-spin text-[#28201C]/60" />
-            <p className="body-lux mt-4 text-sm text-[#28201C]/80">Loading your atelier bag...</p>
+            <p className="body-lux mt-4 text-sm text-[#28201C]/80">Loading your bag...</p>
           </div>
         ) : items.length === 0 ? (
           /* EMPTY BAG EXPERIENCE */
@@ -131,7 +131,7 @@ function CartPage() {
                 <div className="relative z-10">
                   <ShoppingBag className="mx-auto h-12 w-12 text-[#28201C]/50" />
                   <span className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.22em] text-[#28201C]/60 mt-4 block">
-                    ATELIER DRESSING ROOM
+                    LAMOKSH DRESSING ROOM
                   </span>
                   <h2 className="mt-2 font-serif text-2xl uppercase tracking-wider text-[#28201C] sm:text-3xl">
                     YOUR BAG IS WAITING
@@ -330,12 +330,12 @@ function CartPage() {
                               {item.availableStock !== undefined && item.availableStock <= 3 ? (
                                 <p className="inline-flex items-center gap-1.5 text-[0.7rem] font-semibold text-amber-800">
                                   <AlertCircle className="h-3.5 w-3.5" />
-                                  Only {item.availableStock} left in atelier stock
+                                  Only {item.availableStock} left in LaMoksh stock
                                 </p>
                               ) : (
                                 <p className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium text-emerald-800">
                                   <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse" />
-                                  In Stock &bull; Ready for Atelier Inspection & Dispatch
+                                  In Stock &bull; Ready for Inspection & Dispatch
                                 </p>
                               )}
                             </div>
@@ -424,7 +424,7 @@ function CartPage() {
                   <div className="rounded-sm border border-border/80 bg-[#FAF8F5] p-6 md:p-8 shadow-sm space-y-6">
                     <div className="border-b border-[#28201C]/15 pb-4">
                       <span className="eyebrow text-[0.68rem] text-muted-foreground uppercase tracking-widest">
-                        ATELIER CHECKOUT
+                        LAMOKSH CHECKOUT
                       </span>
                       <h2 className="font-serif text-2xl font-normal text-[#28201C] mt-1">
                         Order Summary
@@ -443,7 +443,7 @@ function CartPage() {
                         <div className="flex justify-between text-emerald-800 font-medium bg-emerald-50 px-2.5 py-1.5 rounded-[2px] border border-emerald-200">
                           <span className="flex items-center gap-1">
                             <Tag className="h-3 w-3" />
-                            <span>Atelier Savings</span>
+                            <span>LaMoksh Savings</span>
                           </span>
                           <span className="font-mono">- {formatPrice(totalSavings)}</span>
                         </div>
@@ -510,7 +510,7 @@ function CartPage() {
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Sparkles className="h-4 w-4 text-espresso shrink-0" />
-                      <span>Bespoke Hand-Finished Packaging & Atelier Dust Cover</span>
+                      <span>Bespoke Hand-Finished Packaging & LaMoksh Dust Cover</span>
                     </div>
                     <div className="flex items-center gap-2.5">
                       <Truck className="h-4 w-4 text-espresso shrink-0" />

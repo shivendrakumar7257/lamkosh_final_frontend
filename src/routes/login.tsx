@@ -219,7 +219,7 @@ function LoginPage() {
             <button
               type="button"
               onClick={() => {
-                toast.info("Google Authentication is connecting to atelier services...");
+                toast.info("Google Authentication is connecting to LaMoksh services...");
               }}
               className="flex h-12 w-full items-center justify-center gap-3 rounded-[2px] border border-ivory/30 bg-transparent text-xs font-medium uppercase tracking-[0.12em] text-ivory transition-colors hover:bg-ivory/10"
             >

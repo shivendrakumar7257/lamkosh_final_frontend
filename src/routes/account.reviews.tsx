@@ -33,10 +33,10 @@ function AccountReviewsPage() {
           {/* Top Title & Navigation Tabs */}
           <div className="border-b border-border/80 pb-6">
             <h1 className="font-serif text-3xl font-light text-foreground sm:text-4xl">
-              Client Atelier Account
+              Client LaMoksh Account
             </h1>
             <p className="mt-2 text-xs text-muted-foreground">
-              Manage your personal atelier wardrobe, ongoing deliveries, and reviews.
+              Manage your personal LaMoksh wardrobe, ongoing deliveries, and reviews.
             </p>
 
             {/* Account Navigation Tabs */}

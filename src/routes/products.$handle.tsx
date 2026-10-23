@@ -68,7 +68,7 @@ export const Route = createFileRoute("/products/$handle")({
           images: finalImages,
           media: apiProd.media || [],
           description: apiProd.description || "",
-          craft: "Atelier handcrafted weave with authentic zari embroidery",
+          craft: "Handcrafted weave with authentic zari embroidery",
           dimensions: "Standard dimensions",
           care: "Dry clean only to preserve fine zari threadwork",
           sizes: apiProd.variants?.map((v: any) => v.size) || [],
@@ -265,7 +265,7 @@ function ProductPage() {
   };
 
   const accordions = [
-    { key: "craft", title: "Craft & Atelier Weave", body: product.craft },
+    { key: "craft", title: "Craft & Handloom Weave", body: product.craft },
     { key: "dimensions", title: "Dimensions & Fit", body: product.dimensions },
     { key: "care", title: "Wash & Care Instructions", body: product.care },
     {
@@ -619,7 +619,7 @@ function ProductPage() {
           </dl>
 
           <p className="mt-6 text-xs text-muted-foreground">
-            {product.material} · {product.colour} · Atelier Verified Piece
+            {product.material} · {product.colour} · LaMoksh Verified Piece
           </p>
         </div>
       </div>

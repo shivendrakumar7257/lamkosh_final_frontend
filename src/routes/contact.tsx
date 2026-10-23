@@ -11,10 +11,10 @@ export const Route = createFileRoute("/contact")({
       {
         name: "description",
         content:
-          "Speak with the LaMoksh Fabrics client care team, request a styling appointment, or visit the atelier.",
+          "Speak with the LaMoksh Fabrics client care team, request a styling appointment, or visit our store.",
       },
       { property: "og:title", content: "Contact & Appointments — LaMoksh Fabrics" },
-      { property: "og:description", content: "Client care, appointments and atelier visits." },
+      { property: "og:description", content: "Client care, appointments and store visits." },
       { property: "og:url", content: "/contact" },
     ],
     links: [{ rel: "canonical", href: "/contact" }],
@@ -27,11 +27,11 @@ function ContactPage() {
 
   return (
     <div>
-      {/* Full-Bleed Atelier Hero Banner */}
+      {/* Full-Bleed LaMoksh Hero Banner */}
       <section className="relative flex min-h-[420px] items-center overflow-hidden border-b border-border md:min-h-[480px] lg:h-[55vh] lg:max-h-[600px]">
         <img
           src={images.brandStory}
-          alt="LaMoksh Fabrics Atelier — Contact & Styling Appointments"
+          alt="LaMoksh Fabrics — Contact & Styling Appointments"
           className="absolute inset-0 h-full w-full object-cover object-top md:object-[center_15%]"
         />
         <div className="absolute inset-0 bg-espresso/45 backdrop-brightness-90" />
@@ -45,7 +45,7 @@ function ContactPage() {
               <span className="font-medium text-ivory">Contact</span>
             </nav>
             <p className="eyebrow mt-6 text-ivory/80">Client Care & Styling</p>
-            <h1 className="display-lg mt-3 text-ivory">Contact the Atelier</h1>
+            <h1 className="display-lg mt-3 text-ivory">Contact LaMoksh</h1>
             <p className="body-lux mt-4 max-w-xl text-ivory/90">
               We answer every message personally, usually within one working day. Speak with our
               team, request bespoke fitting, or schedule a styling appointment.
@@ -89,7 +89,12 @@ function ContactPage() {
                       Email
                     </dt>
                     <dd className="mt-1 font-sans text-sm font-medium text-[#28201C]/85">
-                      care@lamoksh.in
+                      <a
+                        href="mailto:fabricslamoksh@gmail.com"
+                        className="hover:text-[#6B1D2F] hover:underline transition-colors"
+                      >
+                        fabricslamoksh@gmail.com
+                      </a>
                     </dd>
                   </div>
 
@@ -98,16 +103,37 @@ function ContactPage() {
                       Telephone / WhatsApp
                     </dt>
                     <dd className="mt-1 font-sans text-sm font-medium text-[#28201C]/85">
-                      +91 99998 75605 · Mon–Sat, 10am–7pm IST
+                      <a
+                        href="tel:+919999875605"
+                        className="hover:text-[#6B1D2F] hover:underline transition-colors"
+                      >
+                        +91 99998 75605
+                      </a>
+                      {" / "}
+                      <a
+                        href="tel:+918882510158"
+                        className="hover:text-[#6B1D2F] hover:underline transition-colors"
+                      >
+                        +91 88825 10158
+                      </a>
                     </dd>
                   </div>
 
                   <div>
                     <dt className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#28201C]/60">
-                      Atelier & Store Location
+                      Working Hours &amp; Days
+                    </dt>
+                    <dd className="mt-1 font-sans text-sm font-medium text-[#28201C]/85">
+                      Wednesday to Monday · 8:00 AM to 10:00 PM
+                    </dd>
+                  </div>
+
+                  <div>
+                    <dt className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-[#28201C]/60">
+                      LaMoksh Store Location
                     </dt>
                     <dd className="mt-1 font-sans text-sm font-medium leading-relaxed text-[#28201C]/85">
-                      LaMoksh Fabrics, LG 3, LG 4 & LG 8, HRC Shopping Complex, Vaibhav Khand,
+                      LaMoksh Fabrics, LG 3, LG 4 &amp; LG 8, HRC Shopping Complex, Vaibhav Khand,
                       Indirapuram, Ghaziabad, Uttar Pradesh 201014
                     </dd>
 

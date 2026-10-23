@@ -109,7 +109,7 @@ export function VariantSelectModal({
 
           <div className="flex flex-1 flex-col justify-center">
             <span className="font-sans text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-[#28201C]/60">
-              {product.type || product.color || "ATELIER SELECTION"}
+              {product.type || product.color || "LAMOKSH SELECTION"}
             </span>
             <h3 className="mt-1 font-serif text-lg font-normal leading-snug text-[#28201C]">
               {title}

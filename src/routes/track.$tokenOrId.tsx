@@ -10,7 +10,7 @@ import { getErrorMessage } from "@/lib/api";
 export const Route = createFileRoute("/track/$tokenOrId")({
   head: () => ({
     meta: [
-      { title: "Live Tracking — LaMoksh Atelier" },
+      { title: "Live Tracking — LaMoksh" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

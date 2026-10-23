@@ -466,7 +466,7 @@ function AdminOrderDetailPage() {
           <div>
             <strong className="font-semibold">Order Declined & Cancelled.</strong>
             <p className="text-rose-800/80 mt-0.5">
-              All reserved product quantities were restored to atelier inventory.
+              All reserved product quantities were restored to LaMoksh inventory.
             </p>
           </div>
         </div>

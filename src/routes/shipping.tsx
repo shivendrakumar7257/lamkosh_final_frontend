@@ -342,15 +342,19 @@ function ShippingPolicyPage() {
                       className="flex items-center gap-2 text-[#1C1917] hover:text-[#6B1D2F]"
                     >
                       <Phone className="h-3.5 w-3.5 text-[#6B1D2F]" />
-                      <span className="font-semibold">+91 99998 75605</span>
+                      <span className="font-semibold">+91 99998 75605 / 88825 10158</span>
                     </a>
-                    <Link
-                      to="/contact"
+                    <a
+                      href="mailto:fabricslamoksh@gmail.com"
                       className="flex items-center gap-2 text-[#1C1917] hover:text-[#6B1D2F]"
                     >
                       <Mail className="h-3.5 w-3.5 text-[#6B1D2F]" />
-                      <span>Contact Atelier Care</span>
-                    </Link>
+                      <span>fabricslamoksh@gmail.com</span>
+                    </a>
+                    <div className="flex items-center gap-2 text-stone-600 pt-0.5">
+                      <Clock className="h-3.5 w-3.5 text-[#6B1D2F]" />
+                      <span>Wed–Mon: 8:00 AM – 10:00 PM</span>
+                    </div>
                   </div>
                 </div>
               </div>

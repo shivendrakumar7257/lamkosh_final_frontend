@@ -52,7 +52,7 @@ function AdminNewBlogPage() {
   const [isCustomCategory, setIsCustomCategory] = useState(false);
   const [description, setDescription] = useState("");
   const [content, setContent] = useState("");
-  const [author, setAuthor] = useState(currentUser?.name || "LaMoksh Atelier");
+  const [author, setAuthor] = useState(currentUser?.name || "LaMoksh");
   const [status, setStatus] = useState<BlogStatus>("DRAFT");
 
   // Featured Image
@@ -435,7 +435,7 @@ function AdminNewBlogPage() {
                 maxLength={100}
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="e.g., LaMoksh Atelier"
+                placeholder="e.g., LaMoksh"
                 className="w-full px-3 py-2 border border-[#E7E5E4] bg-[#FAF8F5] text-xs focus:outline-none focus:border-[#6B1D2F]"
               />
             </div>
@@ -624,7 +624,7 @@ function AdminNewBlogPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        insertFormatting("<blockquote><p>", "</p></blockquote>", "Atelier Quote")
+                        insertFormatting("<blockquote><p>", "</p></blockquote>", "LaMoksh Quote")
                       }
                       className="p-1.5 text-[#1C1917] hover:bg-white rounded transition-colors"
                       title="Blockquote"

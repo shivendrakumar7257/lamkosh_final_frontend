@@ -100,7 +100,7 @@ export const FAQS: FAQItem[] = [
     category: "Returns & Support",
     badge: "Client Care",
     action: {
-      label: "Contact Atelier Support",
+      label: "Contact LaMoksh Support",
       to: "/contact",
     },
   },

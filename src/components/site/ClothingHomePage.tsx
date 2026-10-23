@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/site/ProductCard";
 import { Reveal } from "@/components/site/Reveal";
 import { CategoryShowcase } from "@/components/site/CategoryShowcase";
 import { CategoryFilterBar } from "@/components/site/CategoryFilterBar";
+import { VideoTestimonialsSection } from "@/components/site/VideoTestimonialsSection";
 import { useCategories } from "@/hooks/useCategories";
 import { usePublicProducts } from "@/hooks/use-products";
 import { images, products } from "@/data/catalog";
@@ -25,14 +26,14 @@ const INSTAGRAM_REELS: ReelItem[] = [
   {
     id: "DcmDmx6Plbz",
     url: "https://www.instagram.com/reels/DcmDmx6Plbz/",
-    title: "Elegance, Reimagined in Fusion — Handcrafted Atelier Collection",
+    title: "Elegance, Reimagined in Fusion — Handcrafted LaMoksh Collection",
     poster: images.catNew,
     videoSrc: reel1Video,
   },
   {
     id: "DRjYjEeD8hL",
     url: "https://www.instagram.com/reels/DRjYjEeD8hL/",
-    title: "Exclusive Saree & Suit Edits — Atelier Festive Collection",
+    title: "Exclusive Saree & Suit Edits — LaMoksh Festive Collection",
     poster: images.heroCampaign,
     videoSrc: reel2Video,
   },
@@ -139,7 +140,7 @@ function InstagramReelsSection() {
               Step into our world
             </h2>
             <p className="mt-4 font-sans text-sm leading-relaxed text-[#57534E]">
-              Discover our latest stories, craftsmanship and moments from the atelier.
+              Discover our latest stories, craftsmanship and moments from LaMoksh.
             </p>
           </Reveal>
         </div>
@@ -450,14 +451,14 @@ export function ClothingHomePage() {
             <div className="py-20 text-center space-y-3">
               <p className="font-serif text-2xl text-[#1C1917]">No clothing pieces found</p>
               <p className="body-lux text-[#78716C] max-w-md mx-auto">
-                No pieces currently match these filters. New handcrafted creations are continuously arriving from our atelier.
+                No pieces currently match these filters. New handcrafted creations are continuously arriving from LaMoksh.
               </p>
             </div>
           )}
         </div>
       </section>
 
-      {/* Atelier Craft Section */}
+      {/* LaMoksh Craft Section */}
       <section className="container-lux mt-16 grid items-center gap-12 lg:grid-cols-2">
         <Reveal className="media-zoom">
           <img
@@ -468,7 +469,7 @@ export function ClothingHomePage() {
           />
         </Reveal>
         <Reveal>
-          <p className="eyebrow">Atelier</p>
+          <p className="eyebrow">LaMoksh</p>
           <h2 className="display-lg mt-4">Woven by hand, thread by thread</h2>
           <p className="body-lux mt-6">
             Every LaMoksh Fabrics garment begins on a master weaver's loom. Zari threads are
@@ -477,6 +478,9 @@ export function ClothingHomePage() {
           </p>
         </Reveal>
       </section>
+
+      {/* Real Customer Video Testimonials Section (3 videos in a row with autoplay) */}
+      <VideoTestimonialsSection />
 
       {/* Instagram Reels Showcase Section */}
       <InstagramReelsSection />

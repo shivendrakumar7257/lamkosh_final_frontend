@@ -79,7 +79,7 @@ export const CustomerReviewsTab: React.FC<CustomerReviewsTabProps> = ({ classNam
         <div>
           <h2 className="font-serif text-2xl font-light text-foreground">My Reviews & Ratings</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Track moderation status and feedback on your shared atelier experiences.
+            Track moderation status and feedback on your shared LaMoksh experiences.
           </p>
         </div>
 
@@ -137,7 +137,7 @@ export const CustomerReviewsTab: React.FC<CustomerReviewsTabProps> = ({ classNam
           </h3>
           <p className="mt-1.5 text-xs text-muted-foreground max-w-sm mx-auto">
             {filter === 'ALL'
-              ? 'Share your experience on delivered orders to help fellow connoisseurs and receive atelier benefits.'
+              ? 'Share your experience on delivered orders to help fellow connoisseurs and receive LaMoksh benefits.'
               : 'Try selecting a different filter above.'}
           </p>
           <div className="mt-6">

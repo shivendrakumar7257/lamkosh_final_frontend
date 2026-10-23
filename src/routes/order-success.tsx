@@ -37,7 +37,7 @@ export const Route = createFileRoute("/order-success")({
   },
   head: () => ({
     meta: [
-      { title: "Order Confirmed — LaMoksh Atelier" },
+      { title: "Order Confirmed — LaMoksh" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),
@@ -119,7 +119,7 @@ function OrderSuccessPage() {
             Thank You For Your Order
           </h1>
           <p className="mt-2 font-serif text-sm italic text-ivory/95">
-            Your artisanal garment is now being prepared in the atelier.
+            Your artisanal garment is now being prepared at LaMoksh.
           </p>
         </div>
       </section>
@@ -170,7 +170,7 @@ function OrderSuccessPage() {
                 </p>
                 <p className="mt-1 text-emerald-800/80 leading-relaxed">
                   A temporary password and receipt have been dispatched to your email address. You
-                  can sign in at any time to review your order history and manage your atelier
+                  can sign in at any time to review your order history and manage your LaMoksh
                   wardrobe.
                 </p>
               </div>
@@ -278,7 +278,7 @@ function OrderSuccessPage() {
                   1. Tailoring & Inspection
                 </span>
                 <p className="text-[0.68rem] leading-relaxed">
-                  Each weave is examined for impeccable thread finish and packaged in atelier dust
+                  Each weave is examined for impeccable thread finish and packaged in LaMoksh dust
                   covers.
                 </p>
               </div>

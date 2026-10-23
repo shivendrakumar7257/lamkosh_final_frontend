@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — LaMoksh Atelier" },
+      { title: "Checkout — LaMoksh" },
       {
         name: "description",
         content: "Secure luxury checkout for handcrafted artisanal pieces.",
@@ -250,7 +250,7 @@ function CheckoutPage() {
               Your Bag is Empty
             </h2>
             <p className="mt-2 font-sans text-xs text-[#28201C]/75">
-              Before placing an order, please add handcrafted fabrics or garments from our atelier.
+              Before placing an order, please add handcrafted fabrics or garments from LaMoksh.
             </p>
             <div className="mt-6">
               <Link
@@ -551,7 +551,7 @@ function CheckoutPage() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Confirming Atelier Order...</span>
+                        <span>Confirming Order...</span>
                       </>
                     ) : (
                       <>
@@ -619,7 +619,7 @@ function CheckoutPage() {
                     <div className="flex justify-between text-muted-foreground">
                       <span className="flex items-center gap-1.5">
                         <Truck className="h-3.5 w-3.5 text-emerald-700" />
-                        <span>Insured Atelier Shipping</span>
+                        <span>Insured LaMoksh Shipping</span>
                       </span>
                       <span className="font-medium text-emerald-700 uppercase tracking-wider text-[0.68rem]">
                         Free

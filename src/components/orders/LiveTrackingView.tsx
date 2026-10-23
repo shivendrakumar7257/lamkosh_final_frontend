@@ -20,7 +20,7 @@ interface LiveTrackingViewProps {
 }
 
 const STEPS = [
-  { key: "PLACED", label: "Order Placed", desc: "Received at atelier" },
+  { key: "PLACED", label: "Order Placed", desc: "Received at LaMoksh" },
   { key: "CONFIRMED", label: "Confirmed", desc: "Crafting & packaging" },
   { key: "SHIPPED", label: "In Transit", desc: "Handed over to courier" },
   { key: "OUT_FOR_DELIVERY", label: "Out For Delivery", desc: "Reaching your doorstep" },

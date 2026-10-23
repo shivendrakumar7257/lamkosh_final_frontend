@@ -172,7 +172,7 @@ export const collections: Collection[] = [
     handle: "new-arrivals",
     title: "New Arrivals",
     editorialTitle: "The New Edit",
-    description: "The latest expressions of LaMoksh Fabrics, added as they leave the atelier.",
+    description: "The latest expressions of LaMoksh Fabrics, added as they are crafted.",
     image: prodLavenderFloralSet,
     group: "curated",
   },
