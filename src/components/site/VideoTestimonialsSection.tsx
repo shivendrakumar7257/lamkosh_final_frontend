@@ -95,45 +95,6 @@ const TESTIMONIALS_DATA: VideoTestimonial[] = [
     verified: true,
     date: "August 2026",
   },
-  {
-    id: "testimonial-lamkosh-1",
-    name: "Sneha Mathur",
-    location: "Kolkata",
-    outfit: "Custom Festive Celebration Edit",
-    quote: "From custom consultation to doorstep delivery, the experience was truly five stars.",
-    fullReview:
-      "The LaMoksh team guided me on video call to choose the perfect weave and customized the blouse piece to perfection. The packaging and handwritten care note was such a heartfelt touch.",
-    rating: 5,
-    videoSrc: "/testimonials/lamkosh_1.mp4",
-    verified: true,
-    date: "August 2026",
-  },
-  {
-    id: "testimonial-lamkosh-2",
-    name: "Kavita Iyer",
-    location: "Chennai",
-    outfit: "Grand Temple Zari Kanjeevaram & Silk",
-    quote: "Exquisite luster and immaculate weave weight. True heritage craftsmanship.",
-    fullReview:
-      "A masterpiece in every sense. The temple motifs and rich borders are woven with incredible precision. LaMoksh has become my favorite luxury ethnic house.",
-    rating: 5,
-    videoSrc: "/testimonials/lamkosh_2.mp4",
-    verified: true,
-    date: "July 2026",
-  },
-  {
-    id: "testimonial-5",
-    name: "Tanvi Sethi",
-    location: "Chandigarh",
-    outfit: "Brocade Weave Festive Kurta Set",
-    quote: "The quality is even better in person than on camera. Truly premium handloom.",
-    fullReview:
-      "I was hesitant to buy luxury clothing online, but LaMoksh completely won my trust. The fabric feels luxurious against the skin and the silhouette is supremely flattering.",
-    rating: 5,
-    videoSrc: "/testimonials/testimonials_5.mp4",
-    verified: true,
-    date: "July 2026",
-  },
 ];
 
 interface TestimonialCardProps {
