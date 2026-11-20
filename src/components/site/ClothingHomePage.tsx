@@ -21,16 +21,16 @@ interface ReelItem {
 
 const INSTAGRAM_REELS: ReelItem[] = [
   {
-    id: "testimonial-lamkosh-1",
-    url: "https://www.instagram.com/lamokshfabrics",
-    title: "Sneha Mathur — Custom Festive Celebration Edit",
+    id: "DcmDmx6Plbz",
+    url: "https://www.instagram.com/reels/DcmDmx6Plbz/",
+    title: "Elegance, Reimagined in Fusion — Handcrafted Atelier Collection",
     poster: images.catNew,
     videoSrc: "/testimonials/lamkosh_1.mp4",
   },
   {
-    id: "testimonial-lamkosh-2",
-    url: "https://www.instagram.com/lamokshfabrics",
-    title: "Kavita Iyer — Grand Temple Zari Kanjeevaram & Silk",
+    id: "DRjYjEeD8hL",
+    url: "https://www.instagram.com/reels/DRjYjEeD8hL/",
+    title: "Exclusive Saree & Suit Edits — Atelier Festive Collection",
     poster: images.heroCampaign,
     videoSrc: "/testimonials/lamkosh_2.mp4",
   },
